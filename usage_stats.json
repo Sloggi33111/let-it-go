@@ -12,10 +12,10 @@
     }
   },
   "admin": {
-    "total_calls": 7,
+    "total_calls": 8,
     "daily_calls": {
       "2025-09-04": 1,
-      "2025-09-05": 6
+      "2025-09-05": 7
     }
   },
   "zhangxinzhe": {
