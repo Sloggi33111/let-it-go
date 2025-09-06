@@ -4,5 +4,11 @@
     "daily_calls": {
       "2025-09-06": 5
     }
+  },
+  "admin": {
+    "total_calls": 1,
+    "daily_calls": {
+      "2025-09-06": 1
+    }
   }
 }
