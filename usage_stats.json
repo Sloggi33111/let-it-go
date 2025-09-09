@@ -18,10 +18,10 @@
     }
   },
   "zhengtiancheng": {
-    "total_calls": 150,
+    "total_calls": 149,
     "daily_calls": {
       "2025-09-08": 38,
-      "2025-09-09": 112
+      "2025-09-09": 111
     }
   },
   "admin": {
@@ -43,9 +43,9 @@
     }
   },
   "cuixuewei": {
-    "total_calls": 2,
+    "total_calls": 3,
     "daily_calls": {
-      "2025-09-09": 2
+      "2025-09-09": 3
     }
   }
 }
