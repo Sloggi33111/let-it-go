@@ -41,5 +41,11 @@
     "daily_calls": {
       "2025-09-09": 7
     }
+  },
+  "cuixuewei": {
+    "total_calls": 1,
+    "daily_calls": {
+      "2025-09-09": 1
+    }
   }
 }
