@@ -1,10 +1,10 @@
 {
   "zhangxinzhe": {
-    "total_calls": 68,
+    "total_calls": 69,
     "daily_calls": {
       "2025-09-08": 33,
       "2025-09-10": 4,
-      "2025-09-11": 31
+      "2025-09-11": 32
     }
   },
   "guyiran": {
@@ -17,11 +17,11 @@
     }
   },
   "yangqiuying": {
-    "total_calls": 22,
+    "total_calls": 21,
     "daily_calls": {
       "2025-09-08": 1,
       "2025-09-10": 8,
-      "2025-09-11": 13
+      "2025-09-11": 12
     }
   },
   "zhengtiancheng": {
