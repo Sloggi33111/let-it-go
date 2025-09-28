@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Pinterest-Style Image Gallery</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" async></script>
+    <script src="https://cdn.jsdelivr.net/npm/imagesloaded@5/imagesloaded.pkgd.min.js" async></script>
 </head>
 <body>
     <h1>Welcome to My Image Gallery!</h1>
     
-    <!-- 新增的搜索栏 -->
     <div class="search-container">
         <input type="text" id="search-input" placeholder="Search by filename...">
     </div>
@@ -22,94 +21,93 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 检查 Masonry 和 imagesLoaded 是否加载
-            if (!window.Masonry || !window.imagesLoaded) {
-                console.error('Masonry or imagesLoaded not loaded!');
-                alert('Failed to load required libraries. Please check your network.');
-                return;
-            }
-
             const grid = document.getElementById('grid');
             const searchInput = document.getElementById('search-input');
-            let msnry; // 将 Masonry 实例存储在更高作用域，以便搜索功能可以调用
-            let allGridItems = []; // 存储所有从JSON加载的DOM元素
+            let msnry; 
+            let allGridItems = [];
 
-            // 动态加载图片
-            fetch('images.json')
-                .then(response => {
-                    if (!response.ok) throw new Error('Failed to load images.json: ' + response.status);
-                    return response.json();
-                })
-                .then(images => {
-                    if (!images.length) console.warn('images.json is empty!');
-                    
-                    const fragment = document.createDocumentFragment(); // 使用文档片段以提高性能
+            // 确保 Masonry 和 imagesLoaded 已加载
+            function initializeGallery() {
+                if (!window.Masonry || !window.imagesLoaded) {
+                    setTimeout(initializeGallery, 50); // 如果库未加载，稍后重试
+                    return;
+                }
 
-                    images.forEach(src => {
-                        const item = document.createElement('div');
-                        item.className = 'grid-item';
+                fetch('images.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to load images.json: ' + response.status);
+                        return response.json();
+                    })
+                    .then(images => {
+                        if (!images.length) console.warn('images.json is empty!');
                         
-                        const img = document.createElement('img');
-                        img.src = src;
-                        img.alt = 'Image';
-                        img.loading = 'lazy';
-                        
-                        // 点击复制文件名
-                        img.onclick = () => {
-                            const filename = src.split('/').pop();
-                            navigator.clipboard.writeText(filename)
-                                .then(() => alert('Copied filename to clipboard: ' + filename))
-                                .catch(err => console.error('Failed to copy: ', err));
-                        };
-                        
-                        img.onerror = () => console.error('Failed to load image: ' + src);
-                        item.appendChild(img);
-                        fragment.appendChild(item);
-                        allGridItems.push(item); // 存储元素引用
-                    });
-                    
-                    grid.appendChild(fragment);
+                        const fragment = document.createDocumentFragment();
 
-                    // 等待图片加载后初始化 Masonry
-                    imagesLoaded(grid, function() {
-                        console.log('Images loaded, initializing Masonry');
-                        msnry = new Masonry(grid, {
-                            itemSelector: '.grid-item',
-                            columnWidth: '.grid-sizer',
-                            gutter: 10,
-                            percentPosition: true,
+                        images.forEach(src => {
+                            const item = document.createElement('div');
+                            item.className = 'grid-item';
+                            
+                            const img = document.createElement('img');
+                            img.src = src;
+                            img.alt = 'Image';
+                            img.loading = 'lazy';
+                            
+                            img.onclick = () => {
+                                const filename = src.split('/').pop();
+                                navigator.clipboard.writeText(filename)
+                                    .then(() => alert('Copied filename to clipboard: ' + filename))
+                                    .catch(err => console.error('Failed to copy: ', err));
+                            };
+                            
+                            item.appendChild(img);
+                            fragment.appendChild(item);
+                            allGridItems.push(item);
                         });
-                    });
-                })
-                .catch(error => {
-                    console.error('Error loading images:', error);
-                    alert('Failed to load images. Check console for details.');
-                });
+                        
+                        grid.appendChild(fragment);
 
-            // --- 新增搜索功能 ---
+                        // 初始化 Masonry
+                        imagesLoaded(grid, function() {
+                            msnry = new Masonry(grid, {
+                                itemSelector: '.grid-item',
+                                columnWidth: '.grid-sizer',
+                                gutter: 10,
+                                percentPosition: true,
+                                transitionDuration: '0.6s' // 添加过渡动画
+                            });
+
+                            // 布局完成后，将所有项设置为可见
+                            grid.classList.add('loaded'); 
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading images:', error);
+                        alert('Failed to load images. Check console for details.');
+                    });
+            }
+
+            initializeGallery();
+
+            // 搜索功能
             searchInput.addEventListener('input', function() {
                 const searchTerm = searchInput.value.toLowerCase().trim();
                 
-                // 遍历所有存储的 grid-item 元素
+                // 隐藏或显示项目
                 allGridItems.forEach(item => {
-                    const img = item.querySelector('img');
-                    if (img) {
-                        const filename = img.src.split('/').pop().toLowerCase();
-                        if (filename.includes(searchTerm)) {
-                            // 如果匹配，确保它在DOM中并可见
-                            item.style.display = '';
-                            if (!item.parentNode) {
-                                grid.appendChild(item);
-                            }
-                        } else {
-                            // 如果不匹配，隐藏它
-                            item.style.display = 'none';
-                        }
+                    const filename = item.querySelector('img').src.split('/').pop().toLowerCase();
+                    const isMatch = filename.includes(searchTerm);
+                    // 直接修改类名来控制显示/隐藏，而不是 style.display
+                    if (isMatch) {
+                        item.classList.remove('hidden');
+                    } else {
+                        item.classList.add('hidden');
                     }
                 });
 
-                // 关键步骤：在显示/隐藏项目后，必须重新计算 Masonry 布局
+                // 关键：告诉 Masonry 重新布局
                 if (msnry) {
+                    // 使用 reloadItems() 和 layout() 来处理动态添加/删除的项
+                    msnry.reloadItems();
                     msnry.layout();
                 }
             });
