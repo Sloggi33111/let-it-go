@@ -12,39 +12,51 @@ h1 {
 
 .grid {
     margin: 0 auto;
-    max-width: 1200px;
+    max-width: 1260px; /* 约 5 列 * 236px + 间距，像 Pinterest */
 }
 
-.grid-sizer {
-    width: 25%; /* 响应式：4 列布局，根据视口调整 */
+.grid-sizer,
+.grid-item {
+    width: calc(20% - 10px); /* 5 列布局，减去 gutter，像 Pinterest 236px 基础 */
 }
 
-.grid img {
+.grid-item {
+    margin-bottom: 10px; /* 垂直间距 */
+    overflow: hidden; /* 防止溢出 */
+    border-radius: 6px; /* Pinterest 圆角 */
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04); /* 轻微阴影 */
+    transition: transform 0.2s ease-in-out;
+}
+
+.grid-item:hover {
+    transform: scale(1.02); /* hover 轻微放大，像 Pinterest */
+}
+
+.grid-item img {
     width: 100%; /* 自适应宽度 */
-    max-width: 300px; /* 限制最大宽度，避免占比太大 */
-    margin-bottom: 10px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: transform 0.3s;
-    cursor: pointer; /* 鼠标变手型，表示可点击 */
+    height: auto; /* 保持比例 */
+    display: block; /* 去除底部空白 */
+    cursor: pointer;
 }
 
-.grid img:hover {
-    transform: scale(1.05);
+/* 响应式：像 Pinterest 调整列数 */
+@media (max-width: 1024px) {
+    .grid-sizer,
+    .grid-item {
+        width: calc(25% - 10px); /* 4 列 */
+    }
 }
 
-/* 响应式媒体查询：小屏幕（如手机）调整为 2 列或 1 列 */
 @media (max-width: 768px) {
-    .grid-sizer {
-        width: 50%; /* 2 列 */
+    .grid-sizer,
+    .grid-item {
+        width: calc(33.33% - 10px); /* 3 列 */
     }
 }
 
 @media (max-width: 480px) {
-    .grid-sizer {
-        width: 100%; /* 1 列 */
-    }
-    .grid img {
-        max-width: 100%; /* 全宽 */
+    .grid-sizer,
+    .grid-item {
+        width: calc(50% - 10px); /* 2 列 */
     }
 }
