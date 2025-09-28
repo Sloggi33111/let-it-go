@@ -11,19 +11,30 @@
 <body>
     <h1>Welcome to My Image Gallery!</h1>
     <div class="grid" id="grid">
-        <div class="grid-sizer"></div> <!-- 用于响应式列宽 -->
+        <div class="grid-sizer"></div>
     </div>
     
     <script>
+        // 检查 Masonry 和 imagesLoaded 是否加载
+        if (!window.Masonry || !window.imagesLoaded) {
+            console.error('Masonry or imagesLoaded not loaded!');
+            alert('Failed to load required libraries. Please check your network.');
+        }
+
         // 动态加载图片
         fetch('images.json')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to load images.json: ' + response.status);
+                return response.json();
+            })
             .then(images => {
+                if (!images.length) console.warn('images.json is empty!');
+                
                 const grid = document.getElementById('grid');
                 
                 images.forEach(src => {
                     const item = document.createElement('div');
-                    item.className = 'grid-item'; // 包裹 div，像 Pinterest 卡片
+                    item.className = 'grid-item';
                     
                     const img = document.createElement('img');
                     img.src = src;
@@ -38,23 +49,28 @@
                             .catch(err => console.error('Failed to copy: ', err));
                     };
                     
+                    img.onerror = () => console.error('Failed to load image: ' + src);
                     item.appendChild(img);
                     grid.appendChild(item);
                 });
                 
-                // 等图片加载后初始化 Masonry
-                imagesLoaded(grid, function() {
+                // 等待图片加载后初始化 Masonry
+                imagesLoaded(grid, { background: '.grid-item' }, function() {
+                    console.log('Images loaded, initializing Masonry');
                     new Masonry(grid, {
-                        itemSelector: '.grid-item', // 选择 item 而非 img
+                        itemSelector: '.grid-item',
                         columnWidth: '.grid-sizer',
                         gutter: 10,
-                        percentPosition: true, // 百分比定位，优化排列
-                        stagger: 30, // 交错动画，像 Pinterest 加载
+                        percentPosition: true,
+                        stagger: 30,
                         fitWidth: true
                     });
                 });
             })
-            .catch(error => console.error('Failed to load images:', error));
+            .catch(error => {
+                console.error('Error loading images:', error);
+                alert('Failed to load images. Check console for details.');
+            });
     </script>
 </body>
 </html>
