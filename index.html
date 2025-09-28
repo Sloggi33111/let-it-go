@@ -65,13 +65,34 @@
                     item.className = 'grid-item';
                     
                     const img = document.createElement('img');
-                    img.src = imageInfo.thumbnail; // 现在 imageInfo.thumbnail 是有效的
-                    img.alt = imageInfo.filename;   // 现在 imageInfo.filename 是有效的
+                    img.src = imageInfo.thumbnail;
+                    img.alt = imageInfo.filename;
                     img.loading = 'lazy'; 
                     
+                    // --- 这是修改的核心部分 ---
                     img.onclick = () => {
-                        window.open(imageInfo.full, '_blank'); // 现在 imageInfo.full 是有效的
+                        // 1. 获取完整文件名
+                        const fullFilename = imageInfo.filename;
+
+                        // 2. 找到最后一个 '.' 的位置，以移除后缀名
+                        const lastDotIndex = fullFilename.lastIndexOf('.');
+                        const filenameWithoutExt = (lastDotIndex > -1) 
+                            ? fullFilename.substring(0, lastDotIndex) 
+                            : fullFilename;
+
+                        // 3. 使用 Clipboard API 复制处理后的文件名
+                        navigator.clipboard.writeText(filenameWithoutExt)
+                            .then(() => {
+                                // 4. 成功后给用户提示
+                                alert('Copied: ' + filenameWithoutExt);
+                            })
+                            .catch(err => {
+                                // 5. 失败时在控制台打印错误
+                                console.error('Failed to copy filename: ', err);
+                                alert('Sorry, could not copy the name.');
+                            });
                     };
+                    // --- 修改结束 ---
                     
                     item.appendChild(img);
                     fragment.appendChild(item);
@@ -92,19 +113,12 @@
             
             function filterImages() {
                 const searchTerm = searchInput.value.toLowerCase().trim();
-                
                 grid.innerHTML = '<div class="grid-sizer"></div>';
-                
                 displayedImages = allImages.filter(img => img.filename.toLowerCase().includes(searchTerm));
-                
                 currentIndex = 0; 
-                if (msnry) {
-                  msnry.reloadItems(); 
-                }
+                if (msnry) msnry.reloadItems(); 
                 loadNextBatch(); 
-                if (msnry) {
-                  msnry.layout(); 
-                }
+                if (msnry) msnry.layout(); 
             }
 
             function initializeGallery() {
@@ -123,18 +137,12 @@
 
                 fetch('images.json')
                     .then(response => response.json())
-                    .then(imageUrls => { // 将原始数据命名为 imageUrls
-                        // --- 这是关键的修复代码 ---
-                        // 将字符串数组转换为我们需要的对象数组
-                        allImages = imageUrls.map(url => {
-                            return {
-                                thumbnail: url, // 缩略图和原图都使用同一个URL
-                                full: url,
-                                filename: url.split('/').pop() // 从URL中提取文件名
-                            };
-                        });
-                        // --- 修复结束 ---
-
+                    .then(imageUrls => {
+                        allImages = imageUrls.map(url => ({
+                            thumbnail: url,
+                            full: url,
+                            filename: url.split('/').pop()
+                        }));
                         displayedImages = allImages;
                         loadNextBatch();
                     })
@@ -142,9 +150,7 @@
             }
 
             initializeGallery();
-
             searchInput.addEventListener('input', debounce(filterImages, 300));
-
             window.addEventListener('scroll', () => {
                 if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && !isLoading && currentIndex < displayedImages.length) {
                     loadNextBatch();
