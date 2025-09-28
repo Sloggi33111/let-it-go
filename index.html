@@ -1,16 +1,18 @@
 <!DOCTYPE html>
-<html lang="en"> <!-- 改为英文语言 -->
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Pinterest-Style Image Gallery</title> <!-- 标题改为英文 -->
+    <title>My Pinterest-Style Image Gallery</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js"></script> <!-- Masonry 库 -->
-    <script src="https://cdn.jsdelivr.net/npm/imagesloaded@5/imagesloaded.pkgd.min.js"></script> <!-- 新增 imagesLoaded 库，避免堆叠 -->
+    <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
 </head>
 <body>
-    <h1>Welcome to My Image Gallery!</h1> <!-- 标题改为英文 -->
-    <div class="grid" id="grid"></div>
+    <h1>Welcome to My Image Gallery!</h1>
+    <div class="grid" id="grid">
+        <div class="grid-sizer"></div> <!-- 用于响应式列宽 -->
+    </div>
     
     <script>
         // 动态加载图片
@@ -20,34 +22,39 @@
                 const grid = document.getElementById('grid');
                 
                 images.forEach(src => {
+                    const item = document.createElement('div');
+                    item.className = 'grid-item'; // 包裹 div，像 Pinterest 卡片
+                    
                     const img = document.createElement('img');
                     img.src = src;
-                    img.alt = 'Image'; // 英文描述
+                    img.alt = 'Image';
                     img.loading = 'lazy';
                     
-                    // 添加点击复制文件名功能
+                    // 点击复制文件名
                     img.onclick = () => {
-                        const filename = src.split('/').pop(); // 提取文件名，如 "pic1.jpg"
+                        const filename = src.split('/').pop();
                         navigator.clipboard.writeText(filename)
-                            .then(() => alert('Copied filename to clipboard: ' + filename)) // 英文提示
+                            .then(() => alert('Copied filename to clipboard: ' + filename))
                             .catch(err => console.error('Failed to copy: ', err));
                     };
                     
-                    grid.appendChild(img);
+                    item.appendChild(img);
+                    grid.appendChild(item);
                 });
                 
-                // 等图片加载后初始化 Masonry，避免堆叠
+                // 等图片加载后初始化 Masonry
                 imagesLoaded(grid, function() {
                     new Masonry(grid, {
-                        itemSelector: 'img',
-                        columnWidth: '.grid-sizer', // 使用 sizer 元素实现响应式
+                        itemSelector: '.grid-item', // 选择 item 而非 img
+                        columnWidth: '.grid-sizer',
                         gutter: 10,
-                        percentPosition: true, // 百分比定位，更响应式
+                        percentPosition: true, // 百分比定位，优化排列
+                        stagger: 30, // 交错动画，像 Pinterest 加载
                         fitWidth: true
                     });
                 });
             })
-            .catch(error => console.error('Failed to load images:', error)); // 英文错误日志
+            .catch(error => console.error('Failed to load images:', error));
     </script>
 </body>
 </html>
