@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh"> <!-- 用中文语言 -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的 Pinterest 风格图片墙</title>
+    <link rel="stylesheet" href="styles.css"> <!-- 链接样式文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js"></script> <!-- Masonry 库，用于瀑布流 -->
+</head>
+<body>
+    <h1>欢迎来到我的图片墙！</h1> <!-- 可选标题 -->
+    <div class="grid" id="grid"></div> <!-- 图片容器，空着等 JS 填充 -->
+    
+    <script>
+        // 动态加载图片
+        fetch('images.json') // 从 JSON 文件读取图片列表
+            .then(response => response.json()) // 解析 JSON
+            .then(images => {
+                const grid = document.getElementById('grid'); // 获取容器
+                
+                images.forEach(src => { // 循环每个图片路径
+                    const img = document.createElement('img'); // 创建 img 元素
+                    img.src = src; // 设置路径
+                    img.alt = '图片'; // 描述（SEO 和无障碍）
+                    img.loading = 'lazy'; // 懒加载：滚动到时才加载
+                    grid.appendChild(img); // 添加到容器
+                });
+                
+                // 初始化 Masonry 瀑布流
+                new Masonry(grid, {
+                    itemSelector: 'img', // 选择 img 元素
+                    columnWidth: 200,    // 每列宽度（根据图片大小调整，单位 px）
+                    gutter: 10,          // 图片间距
+                    fitWidth: true       // 自动居中
+                });
+            })
+            .catch(error => console.error('加载图片失败:', error)); // 错误处理
+    </script>
+</body>
+</html>
