@@ -29,31 +29,50 @@ h1 {
 
 .grid {
     margin: 0 auto;
+    /* 对于10列布局，您可能需要一个更宽的最大宽度，或者干脆去掉它让其撑满屏幕 */
+    max-width: 2400px; 
 }
 
 .grid-sizer,
 .grid-item {
-    width: 20%;
-    padding: 5px;
+    width: 10%; /* << 修改点 1: 100 / 10 = 10 列 */
+    padding: 4px; /* 随着图片变小，可以适当减小间距 */
 }
 
 .grid-item img {
     width: 100%;
     height: auto;
     display: block;
-    border-radius: 6px;
+    border-radius: 4px; /* 配合间距调整 */
     cursor: pointer;
-    background-color: #e0e0e0; /* 添加占位背景色 */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    background-color: #e0e0e0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     transition: box-shadow 0.2s ease-in-out;
 }
 
 .grid-item img:hover {
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-/* 响应式媒体查询 */
-@media (max-width: 1200px) { .grid-sizer, .grid-item { width: 25%; } }
-@media (max-width: 992px) { .grid-sizer, .grid-item { width: 33.333%; } }
-@media (max-width: 768px) { .grid-sizer, .grid-item { width: 50%; } }
-@media (max-width: 480px) { .grid-sizer, .grid-item { width: 100%; } }
+/* << 修改点 2: 全面更新响应式布局以适应10列 */
+
+/* 在超宽屏(>2400px)上是10列 */
+
+/* 屏幕宽度 < 2000px 时, 变为 8 列 */
+@media (max-width: 2000px) { .grid-sizer, .grid-item { width: 12.5%; } }
+
+/* 屏幕宽度 < 1600px 时, 变为 6 列 */
+@media (max-width: 1600px) { .grid-sizer, .grid-item { width: 16.666%; } }
+
+/* 屏幕宽度 < 1200px 时, 变为 5 列 */
+@media (max-width: 1200px) { .grid-sizer, .grid-item { width: 20%; } }
+
+/* 屏幕宽度 < 992px 时, 变为 4 列 */
+@media (max-width: 992px) { .grid-sizer, .grid-item { width: 25%; } }
+
+/* 屏幕宽度 < 768px 时, 变为 3 列 */
+@media (max-width: 768px) { .grid-sizer, .grid-item { width: 33.333%; } }
+
+/* 屏幕宽度 < 576px 时, 变为 2 列 */
+@media (max-width: 576px) { .grid-sizer, .grid-item { width: 50%; } }```
+
