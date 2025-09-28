@@ -12,51 +12,52 @@ h1 {
 
 .grid {
     margin: 0 auto;
-    max-width: 1260px; /* 约 5 列 * 236px + 间距，像 Pinterest */
+    max-width: 1260px; /* 5 * 236px + 4 * 10px 间距 */
 }
 
 .grid-sizer,
 .grid-item {
-    width: calc(20% - 10px); /* 5 列布局，减去 gutter，像 Pinterest 236px 基础 */
+    width: calc(20% - 8px); /* 5 列，减去 2 * 4px 左右 margin */
+    margin: 4px; /* 左右 4px，上下由 Masonry 控制 */
 }
 
 .grid-item {
-    margin-bottom: 10px; /* 垂直间距 */
-    overflow: hidden; /* 防止溢出 */
-    border-radius: 6px; /* Pinterest 圆角 */
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04); /* 轻微阴影 */
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    overflow: hidden;
     transition: transform 0.2s ease-in-out;
 }
 
 .grid-item:hover {
-    transform: scale(1.02); /* hover 轻微放大，像 Pinterest */
+    transform: scale(1.02);
 }
 
 .grid-item img {
-    width: 100%; /* 自适应宽度 */
-    height: auto; /* 保持比例 */
-    display: block; /* 去除底部空白 */
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 6px;
     cursor: pointer;
 }
 
-/* 响应式：像 Pinterest 调整列数 */
+/* 响应式：窄屏调整列数，像 Pinterest */
 @media (max-width: 1024px) {
     .grid-sizer,
     .grid-item {
-        width: calc(25% - 10px); /* 4 列 */
+        width: calc(25% - 8px); /* 4 列 */
     }
 }
 
 @media (max-width: 768px) {
     .grid-sizer,
     .grid-item {
-        width: calc(33.33% - 10px); /* 3 列 */
+        width: calc(33.33% - 8px); /* 3 列 */
     }
 }
 
 @media (max-width: 480px) {
     .grid-sizer,
     .grid-item {
-        width: calc(50% - 10px); /* 2 列 */
+        width: calc(50% - 8px); /* 2 列，手机 */
     }
 }
