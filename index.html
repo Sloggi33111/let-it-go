@@ -1,40 +1,53 @@
 <!DOCTYPE html>
-<html lang="zh"> <!-- 用中文语言 -->
+<html lang="en"> <!-- 改为英文语言 -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的 Pinterest 风格图片墙</title>
-    <link rel="stylesheet" href="styles.css"> <!-- 链接样式文件 -->
-    <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js"></script> <!-- Masonry 库，用于瀑布流 -->
+    <title>My Pinterest-Style Image Gallery</title> <!-- 标题改为英文 -->
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js"></script> <!-- Masonry 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/imagesloaded@5/imagesloaded.pkgd.min.js"></script> <!-- 新增 imagesLoaded 库，避免堆叠 -->
 </head>
 <body>
-    <h1>欢迎来到我的图片墙！</h1> <!-- 可选标题 -->
-    <div class="grid" id="grid"></div> <!-- 图片容器，空着等 JS 填充 -->
+    <h1>Welcome to My Image Gallery!</h1> <!-- 标题改为英文 -->
+    <div class="grid" id="grid"></div>
     
     <script>
         // 动态加载图片
-        fetch('images.json') // 从 JSON 文件读取图片列表
-            .then(response => response.json()) // 解析 JSON
+        fetch('images.json')
+            .then(response => response.json())
             .then(images => {
-                const grid = document.getElementById('grid'); // 获取容器
+                const grid = document.getElementById('grid');
                 
-                images.forEach(src => { // 循环每个图片路径
-                    const img = document.createElement('img'); // 创建 img 元素
-                    img.src = src; // 设置路径
-                    img.alt = '图片'; // 描述（SEO 和无障碍）
-                    img.loading = 'lazy'; // 懒加载：滚动到时才加载
-                    grid.appendChild(img); // 添加到容器
+                images.forEach(src => {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.alt = 'Image'; // 英文描述
+                    img.loading = 'lazy';
+                    
+                    // 添加点击复制文件名功能
+                    img.onclick = () => {
+                        const filename = src.split('/').pop(); // 提取文件名，如 "pic1.jpg"
+                        navigator.clipboard.writeText(filename)
+                            .then(() => alert('Copied filename to clipboard: ' + filename)) // 英文提示
+                            .catch(err => console.error('Failed to copy: ', err));
+                    };
+                    
+                    grid.appendChild(img);
                 });
                 
-                // 初始化 Masonry 瀑布流
-                new Masonry(grid, {
-                    itemSelector: 'img', // 选择 img 元素
-                    columnWidth: 200,    // 每列宽度（根据图片大小调整，单位 px）
-                    gutter: 10,          // 图片间距
-                    fitWidth: true       // 自动居中
+                // 等图片加载后初始化 Masonry，避免堆叠
+                imagesLoaded(grid, function() {
+                    new Masonry(grid, {
+                        itemSelector: 'img',
+                        columnWidth: '.grid-sizer', // 使用 sizer 元素实现响应式
+                        gutter: 10,
+                        percentPosition: true, // 百分比定位，更响应式
+                        fitWidth: true
+                    });
                 });
             })
-            .catch(error => console.error('加载图片失败:', error)); // 错误处理
+            .catch(error => console.error('Failed to load images:', error)); // 英文错误日志
     </script>
 </body>
 </html>
