@@ -1,3 +1,8 @@
+/* 添加 box-sizing 以便更好地控制布局 */
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     padding: 20px;
@@ -12,13 +17,14 @@ h1 {
 
 .grid {
     margin: 0 auto;
-    max-width: 1260px; /* 5 * 236px + 4 * 10px 间距 */
+    /* max-width 保持不变，但 Masonry 的 fitWidth 会自动处理容器宽度 */
 }
 
+/* 移除 margin，宽度直接使用百分比 */
 .grid-sizer,
 .grid-item {
-    width: calc(20% - 8px); /* 5 列，减去 2 * 4px 左右 margin */
-    margin: 4px; /* 左右 4px，上下由 Masonry 控制 */
+    width: 20%; /* 5 列 */
+    padding-bottom: 10px; /* 使用 padding-bottom 替代 gutter 的垂直间距 */
 }
 
 .grid-item {
@@ -40,24 +46,31 @@ h1 {
     cursor: pointer;
 }
 
-/* 响应式：窄屏调整列数，像 Pinterest */
-@media (max-width: 1024px) {
+/* 响应式：同样移除 margin 和 calc() */
+@media (max-width: 1200px) { /* 调整断点以获得更好的响应式效果 */
     .grid-sizer,
     .grid-item {
-        width: calc(25% - 8px); /* 4 列 */
+        width: 25%; /* 4 列 */
+    }
+}
+
+@media (max-width: 992px) {
+    .grid-sizer,
+    .grid-item {
+        width: 33.333%; /* 3 列 */
     }
 }
 
 @media (max-width: 768px) {
     .grid-sizer,
     .grid-item {
-        width: calc(33.33% - 8px); /* 3 列 */
+        width: 50%; /* 2 列 */
     }
 }
 
 @media (max-width: 480px) {
     .grid-sizer,
     .grid-item {
-        width: calc(50% - 8px); /* 2 列，手机 */
+        width: 100%; /* 1 列，在非常窄的屏幕上体验更好 */
     }
 }
