@@ -120,9 +120,10 @@
     }
   },
   "cuixuewei": {
-    "total_calls": 5,
+    "total_calls": 6,
     "daily_calls": {
-      "2025-09-09": 5
+      "2025-09-09": 5,
+      "2025-10-09": 1
     }
   },
   "yangweiwei": {
