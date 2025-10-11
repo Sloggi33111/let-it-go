@@ -17,5 +17,11 @@
     "daily_calls": {
       "2025-10-11": 24
     }
+  },
+  "admin": {
+    "total_calls": 1,
+    "daily_calls": {
+      "2025-10-11": 1
+    }
   }
 }
