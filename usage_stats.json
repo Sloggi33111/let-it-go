@@ -38,5 +38,11 @@
     "daily_calls": {
       "2025-10-11": 42
     }
+  },
+  "weihongwei": {
+    "total_calls": 1,
+    "daily_calls": {
+      "2025-10-13": 1
+    }
   }
 }
