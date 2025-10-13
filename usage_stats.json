@@ -34,9 +34,10 @@
     }
   },
   "yaogaoshuang": {
-    "total_calls": 42,
+    "total_calls": 43,
     "daily_calls": {
-      "2025-10-11": 42
+      "2025-10-11": 42,
+      "2025-10-13": 1
     }
   },
   "weihongwei": {
