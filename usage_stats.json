@@ -1,9 +1,10 @@
 {
   "yangqiuying": {
-    "total_calls": 11,
+    "total_calls": 12,
     "daily_calls": {
       "2025-10-10": 1,
-      "2025-10-11": 10
+      "2025-10-11": 10,
+      "2025-10-13": 1
     }
   },
   "guyiran": {
