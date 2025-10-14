@@ -69,5 +69,11 @@
     "daily_calls": {
       "2025-10-14": 6
     }
+  },
+  "zhengtiancheng": {
+    "total_calls": 1,
+    "daily_calls": {
+      "2025-10-14": 1
+    }
   }
 }
