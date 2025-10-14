@@ -55,5 +55,11 @@
     "daily_calls": {
       "2025-10-14": 7
     }
+  },
+  "xinchangfa": {
+    "total_calls": 1,
+    "daily_calls": {
+      "2025-10-14": 1
+    }
   }
 }
