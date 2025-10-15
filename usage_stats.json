@@ -1,81 +1,8 @@
 {
-  "yangqiuying": {
-    "total_calls": 32,
-    "daily_calls": {
-      "2025-10-10": 1,
-      "2025-10-11": 10,
-      "2025-10-13": 6,
-      "2025-10-14": 15
-    }
-  },
-  "guyiran": {
-    "total_calls": 44,
-    "daily_calls": {
-      "2025-10-10": 3,
-      "2025-10-11": 33,
-      "2025-10-14": 8
-    }
-  },
-  "chenzeyu": {
-    "total_calls": 141,
-    "daily_calls": {
-      "2025-10-11": 25,
-      "2025-10-13": 14,
-      "2025-10-14": 100,
-      "2025-10-15": 2
-    }
-  },
-  "admin": {
-    "total_calls": 4,
-    "daily_calls": {
-      "2025-10-11": 2,
-      "2025-10-14": 2
-    }
-  },
-  "zhangxinzhe": {
-    "total_calls": 143,
-    "daily_calls": {
-      "2025-10-11": 54,
-      "2025-10-13": 53,
-      "2025-10-14": 36
-    }
-  },
-  "yaogaoshuang": {
-    "total_calls": 85,
-    "daily_calls": {
-      "2025-10-11": 42,
-      "2025-10-13": 43
-    }
-  },
-  "weihongwei": {
-    "total_calls": 4,
-    "daily_calls": {
-      "2025-10-13": 4
-    }
-  },
-  "xuruyi": {
-    "total_calls": 7,
-    "daily_calls": {
-      "2025-10-14": 7
-    }
-  },
-  "xinchangfa": {
+  "zhengtiancheng": {
     "total_calls": 1,
     "daily_calls": {
-      "2025-10-14": 1
-    }
-  },
-  "cuixuewei": {
-    "total_calls": 12,
-    "daily_calls": {
-      "2025-10-14": 12
-    }
-  },
-  "zhengtiancheng": {
-    "total_calls": 27,
-    "daily_calls": {
-      "2025-10-14": 19,
-      "2025-10-15": 8
+      "2025-10-15": 1
     }
   }
 }
