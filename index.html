@@ -1,162 +1,149 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Fast Image Gallery</title>
-    <link rel="stylesheet" href="styles.css">
-    <!-- 将脚本移到 head 中并移除 async，确保在执行后续 script 前加载完成 -->
-    <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
-</head>
-<body>
-    <h1>My Fast Image Gallery</h1>
-    
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search by filename...">
-    </div>
+document.addEventListener('DOMContentLoaded', function() {
+    const grid = document.getElementById('grid');
+    const searchInput = document.getElementById('search-input');
+    const loadingIndicator = document.getElementById('loading-indicator');
 
-    <div class="grid" id="grid">
-        <div class="grid-sizer"></div>
-    </div>
+    let msnry;
+    let allImages = [];
+    let displayedImages = [];
+    let currentIndex = 0;
+    const batchSize = 20;
+    let isLoading = false;
 
-    <div id="loading-indicator" style="display: none; text-align: center; padding: 20px;">
-        <p>Loading more images...</p>
-    </div>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const grid = document.getElementById('grid');
-            const searchInput = document.getElementById('search-input');
-            const loadingIndicator = document.getElementById('loading-indicator');
+    function debounce(func, delay) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
 
-            let msnry;
-            let allImages = []; 
-            let displayedImages = []; 
-            let currentIndex = 0; 
-            const batchSize = 20; 
-            let isLoading = false; 
+    function loadNextBatch() {
+        if (isLoading) return;
+        isLoading = true;
+        loadingIndicator.style.display = 'block';
 
-            // 初始化 Masonry
-            msnry = new Masonry(grid, {
-                itemSelector: '.grid-item',
-                columnWidth: '.grid-sizer',
-                gutter: 10,
-                percentPosition: true,
-                transitionDuration: '0.2s' // 可以加上一个短暂的过渡效果
-            });
+        const batch = displayedImages.slice(currentIndex, currentIndex + batchSize);
 
-            function debounce(func, delay) {
-                let timeout;
-                return function(...args) {
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => func.apply(this, args), delay);
-                };
-            }
+        if (batch.length === 0) {
+            loadingIndicator.style.display = 'none';
+            isLoading = false;
+            return;
+        }
 
-            function loadNextBatch() {
-                if (isLoading || currentIndex >= displayedImages.length) return;
-                isLoading = true;
-                loadingIndicator.style.display = 'block';
+        const fragment = document.createDocumentFragment();
+        const newItems = [];
 
-                const batch = displayedImages.slice(currentIndex, currentIndex + batchSize);
+        batch.forEach(imageInfo => {
+            const item = document.createElement('div');
+            item.className = 'grid-item';
 
-                if (batch.length === 0) {
-                    loadingIndicator.style.display = 'none';
-                    isLoading = false;
-                    return; 
-                }
+            const img = document.createElement('img');
+            img.src = imageInfo.thumbnail;
+            img.alt = imageInfo.filename;
+            img.loading = 'lazy';
 
-                const fragment = document.createDocumentFragment();
-                const newItems = [];
+            img.onclick = () => {
+                const fullFilename = imageInfo.filename;
+                const lastDotIndex = fullFilename.lastIndexOf('.');
+                const filenameWithoutExt = (lastDotIndex > -1)
+                    ? fullFilename.substring(0, lastDotIndex)
+                    : fullFilename;
 
-                batch.forEach(imageInfo => {
-                    const item = document.createElement('div');
-                    item.className = 'grid-item';
-                    
-                    const img = document.createElement('img');
-                    img.src = imageInfo.thumbnail;
-                    img.alt = imageInfo.filename;
-                    img.loading = 'lazy'; 
-                    
-                    img.onclick = () => {
-                        const fullFilename = imageInfo.filename;
-                        const lastDotIndex = fullFilename.lastIndexOf('.');
-                        const filenameWithoutExt = (lastDotIndex > -1) 
-                            ? fullFilename.substring(0, lastDotIndex) 
-                            : fullFilename;
+                navigator.clipboard.writeText(filenameWithoutExt)
+                    .then(() => {
+                        alert('Copied: ' + filenameWithoutExt);
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy filename: ', err);
+                        alert('Sorry, could not copy the name.');
+                    });
+            };
 
-                        navigator.clipboard.writeText(filenameWithoutExt)
-                            .then(() => {
-                                alert('Copied: ' + filenameWithoutExt);
-                            })
-                            .catch(err => {
-                                console.error('Failed to copy filename: ', err);
-                                alert('Sorry, could not copy the name.');
-                            });
-                    };
-                    
-                    item.appendChild(img);
-                    fragment.appendChild(item);
-                    newItems.push(item);
-                });
+            item.appendChild(img);
+            fragment.appendChild(item);
+            newItems.push(item);
+        });
 
-                grid.appendChild(fragment);
+        grid.appendChild(fragment);
 
-                // **关键修改：** 使用 imagesLoaded 包裹新元素，并在回调中附加和布局
-                imagesLoaded(newItems, function() {
-                    msnry.appended(newItems); // 使用 appended 来添加新项
-                    msnry.layout(); // 重新布局
-                    
-                    currentIndex += batch.length;
-                    isLoading = false;
-                    loadingIndicator.style.display = 'none';
-                });
-            }
-            
-            function filterImages() {
-                const searchTerm = searchInput.value.toLowerCase().trim();
-                
-                // 1. 移除现有的元素
-                const itemsToRemove = grid.querySelectorAll('.grid-item');
-                if (itemsToRemove.length > 0) {
-                    msnry.remove(itemsToRemove);
-                }
-
-                // 2. 过滤图片数据
-                displayedImages = allImages.filter(img => img.filename.toLowerCase().includes(searchTerm));
-                currentIndex = 0; 
-                
-                // 3. 重新加载第一批数据
-                loadNextBatch();
-                
-                // 4. 在加载完成后重新布局
+        // 使用 imagesLoaded 确保图片加载完成后再进行布局
+        imagesLoaded(grid).on('progress', function() {
+            if (msnry) {
+                // 核心改动：在图片加载过程中持续触发布局
                 msnry.layout();
             }
-
-            function initializeGallery() {
-                fetch('images.json')
-                    .then(response => response.json())
-                    .then(imageUrls => {
-                        allImages = imageUrls.map(url => ({
-                            thumbnail: url,
-                            full: url,
-                            filename: url.split('/').pop()
-                        }));
-                        displayedImages = allImages;
-                        loadNextBatch();
-                    })
-                    .catch(console.error);
+        }).on('done', function() {
+            // 所有图片加载完成后再次确保布局
+            if (msnry) {
+                // 将新加载的元素添加到 Masonry 实例中
+                msnry.appended(newItems);
             }
-
-            initializeGallery();
-            searchInput.addEventListener('input', debounce(filterImages, 300));
-            window.addEventListener('scroll', () => {
-                if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && !isLoading) {
-                    loadNextBatch();
-                }
-            });
+            currentIndex += batch.length;
+            isLoading = false;
+            loadingIndicator.style.display = 'none';
         });
-    </script>
-</body>
-</html>
+    }
+
+    function filterImages() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        
+        // 1. 获取所有当前的 grid-item 元素
+        const items = grid.querySelectorAll('.grid-item');
+        
+        // 2. 从 Masonry 实例中移除它们
+        if (msnry && items.length > 0) {
+            msnry.remove(items);
+        }
+        
+        // 3. 从 DOM 中移除它们
+        items.forEach(item => item.remove());
+
+        // 4. 重置数据和索引
+        displayedImages = allImages.filter(img => img.filename.toLowerCase().includes(searchTerm));
+        currentIndex = 0;
+        
+        // 5. 重新布局并加载新数据
+        if (msnry) {
+            msnry.layout();
+        }
+        loadNextBatch();
+    }
+
+    function initializeGallery() {
+        if (!window.Masonry || !window.imagesLoaded) {
+            setTimeout(initializeGallery, 50);
+            return;
+        }
+
+        msnry = new Masonry(grid, {
+            itemSelector: '.grid-item',
+            columnWidth: '.grid-sizer',
+            gutter: 10,
+            percentPosition: true,
+            transitionDuration: 0 // 建议在动态加载时禁用动画，避免闪烁
+        });
+
+        fetch('images.json')
+            .then(response => response.json())
+            .then(imageUrls => {
+                allImages = imageUrls.map(url => ({
+                    thumbnail: url,
+                    full: url,
+                    filename: url.split('/').pop()
+                }));
+                displayedImages = allImages;
+                loadNextBatch();
+            })
+            .catch(console.error);
+    }
+
+    initializeGallery();
+    searchInput.addEventListener('input', debounce(filterImages, 300));
+    window.addEventListener('scroll', () => {
+        // 优化滚动加载条件
+        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 500 && !isLoading && currentIndex < displayedImages.length) {
+            loadNextBatch();
+        }
+    });
+});
