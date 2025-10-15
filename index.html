@@ -1,149 +1,326 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const grid = document.getElementById('grid');
-    const searchInput = document.getElementById('search-input');
-    const loadingIndicator = document.getElementById('loading-indicator');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Fast Image Gallery</title>
+    
+    <!-- 引入 Masonry 和 imagesLoaded 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" async></script>
+    <script src="https://cdn.jsdelivr.net/npm/imagesloaded@5/imagesloaded.pkgd.min.js" async></script>
 
-    let msnry;
-    let allImages = [];
-    let displayedImages = [];
-    let currentIndex = 0;
-    const batchSize = 20;
-    let isLoading = false;
-
-    function debounce(func, delay) {
-        let timeout;
-        return function(...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), delay);
-        };
-    }
-
-    function loadNextBatch() {
-        if (isLoading) return;
-        isLoading = true;
-        loadingIndicator.style.display = 'block';
-
-        const batch = displayedImages.slice(currentIndex, currentIndex + batchSize);
-
-        if (batch.length === 0) {
-            loadingIndicator.style.display = 'none';
-            isLoading = false;
-            return;
+    <style>
+        /* --- CSS 样式 --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
         }
 
-        const fragment = document.createDocumentFragment();
-        const newItems = [];
+        h1 {
+            text-align: center;
+            color: #333;
+        }
 
-        batch.forEach(imageInfo => {
-            const item = document.createElement('div');
-            item.className = 'grid-item';
+        .search-container {
+            text-align: center;
+            margin-bottom: 25px;
+        }
 
-            const img = document.createElement('img');
-            img.src = imageInfo.thumbnail;
-            img.alt = imageInfo.filename;
-            img.loading = 'lazy';
+        #search-input {
+            width: 50%;
+            max-width: 400px;
+            padding: 12px 15px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            outline: none;
+            transition: box-shadow 0.3s;
+        }
 
-            img.onclick = () => {
-                const fullFilename = imageInfo.filename;
-                const lastDotIndex = fullFilename.lastIndexOf('.');
-                const filenameWithoutExt = (lastDotIndex > -1)
-                    ? fullFilename.substring(0, lastDotIndex)
-                    : fullFilename;
+        #search-input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
+        }
 
-                navigator.clipboard.writeText(filenameWithoutExt)
-                    .then(() => {
-                        alert('Copied: ' + filenameWithoutExt);
-                    })
-                    .catch(err => {
-                        console.error('Failed to copy filename: ', err);
-                        alert('Sorry, could not copy the name.');
-                    });
-            };
+        /* 瀑布流网格容器 */
+        .grid {
+            margin: 0 auto;
+            width: 95%;
+            max-width: 1600px;
+        }
 
-            item.appendChild(img);
-            fragment.appendChild(item);
-            newItems.push(item);
-        });
+        /* 清除浮动，用于 Masonry 布局 */
+        .grid:after {
+            content: '';
+            display: block;
+            clear: both;
+        }
 
-        grid.appendChild(fragment);
+        /* 网格尺寸参考，用于计算列宽 */
+        .grid-sizer,
+        .grid-item {
+            width: 19%; /* 设定5列布局，考虑间距 */
+            margin-bottom: 10px;
+        }
 
-        // 使用 imagesLoaded 确保图片加载完成后再进行布局
-        imagesLoaded(grid).on('progress', function() {
-            if (msnry) {
-                // 核心改动：在图片加载过程中持续触发布局
-                msnry.layout();
+        .grid-item {
+            float: left;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .grid-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .grid-item img {
+            display: block;
+            width: 100%;
+            height: auto;
+            cursor: pointer;
+        }
+
+        /* 加载指示器 */
+        #loading-indicator {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        /* 响应式布局 */
+        @media screen and (max-width: 1200px) {
+            .grid-sizer,
+            .grid-item {
+                width: 24%; /* 4列 */
             }
-        }).on('done', function() {
-            // 所有图片加载完成后再次确保布局
-            if (msnry) {
-                // 将新加载的元素添加到 Masonry 实例中
-                msnry.appended(newItems);
+        }
+
+        @media screen and (max-width: 992px) {
+            .grid-sizer,
+            .grid-item {
+                width: 32%; /* 3列 */
             }
-            currentIndex += batch.length;
-            isLoading = false;
-            loadingIndicator.style.display = 'none';
-        });
-    }
-
-    function filterImages() {
-        const searchTerm = searchInput.value.toLowerCase().trim();
-        
-        // 1. 获取所有当前的 grid-item 元素
-        const items = grid.querySelectorAll('.grid-item');
-        
-        // 2. 从 Masonry 实例中移除它们
-        if (msnry && items.length > 0) {
-            msnry.remove(items);
         }
         
-        // 3. 从 DOM 中移除它们
-        items.forEach(item => item.remove());
-
-        // 4. 重置数据和索引
-        displayedImages = allImages.filter(img => img.filename.toLowerCase().includes(searchTerm));
-        currentIndex = 0;
-        
-        // 5. 重新布局并加载新数据
-        if (msnry) {
-            msnry.layout();
-        }
-        loadNextBatch();
-    }
-
-    function initializeGallery() {
-        if (!window.Masonry || !window.imagesLoaded) {
-            setTimeout(initializeGallery, 50);
-            return;
+        @media screen and (max-width: 768px) {
+            .grid-sizer,
+            .grid-item {
+                width: 48%; /* 2列 */
+            }
         }
 
-        msnry = new Masonry(grid, {
-            itemSelector: '.grid-item',
-            columnWidth: '.grid-sizer',
-            gutter: 10,
-            percentPosition: true,
-            transitionDuration: 0 // 建议在动态加载时禁用动画，避免闪烁
-        });
+        @media screen and (max-width: 576px) {
+            .grid-sizer,
+            .grid-item {
+                width: 98%; /* 1列 */
+            }
+            #search-input {
+                width: 80%;
+            }
+        }
 
-        fetch('images.json')
-            .then(response => response.json())
-            .then(imageUrls => {
-                allImages = imageUrls.map(url => ({
-                    thumbnail: url,
-                    full: url,
-                    filename: url.split('/').pop()
-                }));
-                displayedImages = allImages;
+    </style>
+</head>
+<body>
+    <h1>My Fast Image Gallery</h1>
+    
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search by filename...">
+    </div>
+
+    <!-- 瀑布流容器 -->
+    <div class="grid" id="grid">
+        <!-- 这个元素用于 Masonry 计算列宽 -->
+        <div class="grid-sizer"></div>
+    </div>
+
+    <!-- 加载更多提示 -->
+    <div id="loading-indicator">
+        <p>Loading more images...</p>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const grid = document.getElementById('grid');
+            const searchInput = document.getElementById('search-input');
+            const loadingIndicator = document.getElementById('loading-indicator');
+
+            let msnry;
+            let allImages = [];
+            let displayedImages = [];
+            let currentIndex = 0;
+            const batchSize = 20; // 每次加载20张图片
+            let isLoading = false;
+
+            /**
+             * 防抖函数，用于优化输入事件，避免频繁触发搜索
+             * @param {Function} func - 需要执行的函数
+             * @param {number} delay - 延迟时间（毫秒）
+             */
+            function debounce(func, delay) {
+                let timeout;
+                return function(...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), delay);
+                };
+            }
+
+            /**
+             * 加载下一批图片
+             */
+            function loadNextBatch() {
+                if (isLoading) return;
+                isLoading = true;
+                loadingIndicator.style.display = 'block';
+
+                const batch = displayedImages.slice(currentIndex, currentIndex + batchSize);
+
+                if (batch.length === 0) {
+                    loadingIndicator.style.display = 'none';
+                    isLoading = false;
+                    return;
+                }
+
+                const fragment = document.createDocumentFragment();
+                const newItems = [];
+
+                batch.forEach(imageInfo => {
+                    const item = document.createElement('div');
+                    item.className = 'grid-item';
+
+                    const img = document.createElement('img');
+                    img.src = imageInfo.thumbnail;
+                    img.alt = imageInfo.filename;
+                    img.loading = 'lazy'; // 使用浏览器原生懒加载
+
+                    // 点击图片复制文件名（不含后缀）
+                    img.onclick = () => {
+                        const fullFilename = imageInfo.filename;
+                        const lastDotIndex = fullFilename.lastIndexOf('.');
+                        const filenameWithoutExt = (lastDotIndex > -1)
+                            ? fullFilename.substring(0, lastDotIndex)
+                            : fullFilename;
+
+                        navigator.clipboard.writeText(filenameWithoutExt)
+                            .then(() => {
+                                alert('Copied: ' + filenameWithoutExt);
+                            })
+                            .catch(err => {
+                                console.error('Failed to copy filename: ', err);
+                                alert('Sorry, could not copy the name.');
+                            });
+                    };
+
+                    item.appendChild(img);
+                    fragment.appendChild(item);
+                    newItems.push(item);
+                });
+
+                grid.appendChild(fragment);
+
+                // 使用 imagesLoaded 确保图片加载完成后再进行布局
+                imagesLoaded(grid).on('progress', function() {
+                    if (msnry) {
+                        // 在图片加载过程中持续触发布局，防止元素重叠
+                        msnry.layout();
+                    }
+                }).on('done', function() {
+                    if (msnry) {
+                        // 将新加载的元素正式添加到 Masonry 实例中
+                        msnry.appended(newItems);
+                    }
+                    currentIndex += batch.length;
+                    isLoading = false;
+                    loadingIndicator.style.display = 'none';
+                });
+            }
+
+            /**
+             * 根据搜索词过滤图片
+             */
+            function filterImages() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                
+                // 1. 获取所有当前的 grid-item 元素
+                const items = grid.querySelectorAll('.grid-item');
+                
+                // 2. (关键) 从 Masonry 实例中移除它们，更新内部状态
+                if (msnry && items.length > 0) {
+                    msnry.remove(items);
+                }
+                
+                // 3. 从 DOM 中移除它们
+                items.forEach(item => item.remove());
+
+                // 4. 重置数据源和当前加载索引
+                displayedImages = allImages.filter(img => img.filename.toLowerCase().includes(searchTerm));
+                currentIndex = 0;
+                
+                // 5. 重新布局（此时通常只有 sizer 元素），然后加载新的数据
+                if (msnry) {
+                    msnry.layout();
+                }
                 loadNextBatch();
-            })
-            .catch(console.error);
-    }
+            }
+            
+            /**
+             * 初始化图库
+             */
+            function initializeGallery() {
+                // 确保 Masonry 和 imagesLoaded 库已加载
+                if (!window.Masonry || !window.imagesLoaded) {
+                    setTimeout(initializeGallery, 50);
+                    return;
+                }
+                
+                // 初始化 Masonry 实例
+                msnry = new Masonry(grid, {
+                    itemSelector: '.grid-item',
+                    columnWidth: '.grid-sizer',
+                    gutter: 10,
+                    percentPosition: true,
+                    transitionDuration: 0 // 建议在动态加载时禁用动画，避免闪烁
+                });
 
-    initializeGallery();
-    searchInput.addEventListener('input', debounce(filterImages, 300));
-    window.addEventListener('scroll', () => {
-        // 优化滚动加载条件
-        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 500 && !isLoading && currentIndex < displayedImages.length) {
-            loadNextBatch();
-        }
-    });
-});
+                // 获取图片数据并开始加载
+                fetch('images.json')
+                    .then(response => response.json())
+                    .then(imageUrls => {
+                        allImages = imageUrls.map(url => ({
+                            thumbnail: url,
+                            full: url, // 备用，可用于点击放大等功能
+                            filename: url.split('/').pop()
+                        }));
+                        displayedImages = allImages;
+                        loadNextBatch(); // 加载第一批图片
+                    })
+                    .catch(error => {
+                        console.error('Error fetching images.json:', error);
+                        grid.innerHTML = '<p style="text-align:center; color:red;">Failed to load image list. Please check images.json file and console for errors.</p>';
+                    });
+            }
+
+            // --- 事件监听 ---
+
+            // 1. 页面加载完成后初始化图库
+            initializeGallery();
+            
+            // 2. 监听搜索框输入，使用防抖优化
+            searchInput.addEventListener('input', debounce(filterImages, 300));
+            
+            // 3. 监听窗口滚动，实现无限加载
+            window.addEventListener('scroll', () => {
+                // 当滚动到距离页面底部500px时，且没有在加载中，且还有未显示的图片
+                if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 500 && !isLoading && currentIndex < displayedImages.length) {
+                    loadNextBatch();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
