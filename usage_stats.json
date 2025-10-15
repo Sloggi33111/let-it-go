@@ -28,5 +28,11 @@
     "daily_calls": {
       "2025-10-15": 27
     }
+  },
+  "liuzhantong": {
+    "total_calls": 1,
+    "daily_calls": {
+      "2025-10-15": 1
+    }
   }
 }
