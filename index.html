@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Fast Image Gallery</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" async></script>
-    <script src="https://cdn.jsdelivr.net/npm/imagesloaded@5/imagesloaded.pkgd.min.js" async></script>
+    <!-- 将脚本移到 head 中并移除 async，确保在执行后续 script 前加载完成 -->
+    <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
 </head>
 <body>
     <h1>My Fast Image Gallery</h1>
@@ -36,6 +37,15 @@
             const batchSize = 20; 
             let isLoading = false; 
 
+            // 初始化 Masonry
+            msnry = new Masonry(grid, {
+                itemSelector: '.grid-item',
+                columnWidth: '.grid-sizer',
+                gutter: 10,
+                percentPosition: true,
+                transitionDuration: '0.2s' // 可以加上一个短暂的过渡效果
+            });
+
             function debounce(func, delay) {
                 let timeout;
                 return function(...args) {
@@ -45,7 +55,7 @@
             }
 
             function loadNextBatch() {
-                if (isLoading) return;
+                if (isLoading || currentIndex >= displayedImages.length) return;
                 isLoading = true;
                 loadingIndicator.style.display = 'block';
 
@@ -69,30 +79,22 @@
                     img.alt = imageInfo.filename;
                     img.loading = 'lazy'; 
                     
-                    // --- 这是修改的核心部分 ---
                     img.onclick = () => {
-                        // 1. 获取完整文件名
                         const fullFilename = imageInfo.filename;
-
-                        // 2. 找到最后一个 '.' 的位置，以移除后缀名
                         const lastDotIndex = fullFilename.lastIndexOf('.');
                         const filenameWithoutExt = (lastDotIndex > -1) 
                             ? fullFilename.substring(0, lastDotIndex) 
                             : fullFilename;
 
-                        // 3. 使用 Clipboard API 复制处理后的文件名
                         navigator.clipboard.writeText(filenameWithoutExt)
                             .then(() => {
-                                // 4. 成功后给用户提示
                                 alert('Copied: ' + filenameWithoutExt);
                             })
                             .catch(err => {
-                                // 5. 失败时在控制台打印错误
                                 console.error('Failed to copy filename: ', err);
                                 alert('Sorry, could not copy the name.');
                             });
                     };
-                    // --- 修改结束 ---
                     
                     item.appendChild(img);
                     fragment.appendChild(item);
@@ -101,10 +103,11 @@
 
                 grid.appendChild(fragment);
 
+                // **关键修改：** 使用 imagesLoaded 包裹新元素，并在回调中附加和布局
                 imagesLoaded(newItems, function() {
-                    if (msnry) {
-                        msnry.appended(newItems);
-                    }
+                    msnry.appended(newItems); // 使用 appended 来添加新项
+                    msnry.layout(); // 重新布局
+                    
                     currentIndex += batch.length;
                     isLoading = false;
                     loadingIndicator.style.display = 'none';
@@ -113,28 +116,25 @@
             
             function filterImages() {
                 const searchTerm = searchInput.value.toLowerCase().trim();
-                grid.innerHTML = '<div class="grid-sizer"></div>';
+                
+                // 1. 移除现有的元素
+                const itemsToRemove = grid.querySelectorAll('.grid-item');
+                if (itemsToRemove.length > 0) {
+                    msnry.remove(itemsToRemove);
+                }
+
+                // 2. 过滤图片数据
                 displayedImages = allImages.filter(img => img.filename.toLowerCase().includes(searchTerm));
                 currentIndex = 0; 
-                if (msnry) msnry.reloadItems(); 
-                loadNextBatch(); 
-                if (msnry) msnry.layout(); 
+                
+                // 3. 重新加载第一批数据
+                loadNextBatch();
+                
+                // 4. 在加载完成后重新布局
+                msnry.layout();
             }
 
             function initializeGallery() {
-                if (!window.Masonry || !window.imagesLoaded) {
-                    setTimeout(initializeGallery, 50);
-                    return;
-                }
-                
-                msnry = new Masonry(grid, {
-                    itemSelector: '.grid-item',
-                    columnWidth: '.grid-sizer',
-                    gutter: 10,
-                    percentPosition: true,
-                    transitionDuration: 0
-                });
-
                 fetch('images.json')
                     .then(response => response.json())
                     .then(imageUrls => {
@@ -152,7 +152,7 @@
             initializeGallery();
             searchInput.addEventListener('input', debounce(filterImages, 300));
             window.addEventListener('scroll', () => {
-                if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && !isLoading && currentIndex < displayedImages.length) {
+                if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && !isLoading) {
                     loadNextBatch();
                 }
             });
