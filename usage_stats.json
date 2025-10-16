@@ -28,5 +28,11 @@
     "daily_calls": {
       "2025-10-16": 21
     }
+  },
+  "wanghao": {
+    "total_calls": 1,
+    "daily_calls": {
+      "2025-10-16": 1
+    }
   }
 }
