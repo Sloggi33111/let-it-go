@@ -40,5 +40,11 @@
     "daily_calls": {
       "2025-10-16": 4
     }
+  },
+  "chenzeyu": {
+    "total_calls": 1,
+    "daily_calls": {
+      "2025-10-16": 1
+    }
   }
 }
