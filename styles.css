@@ -32,39 +32,43 @@ h1 {
     max-width: 2400px; 
 }
 
-/* 清除浮动，这是与 float: left 配套使用的最佳实践 */
-.grid:after {
-  content: '';
-  display: block;
-  clear: both;
+/* --- 核心修改部分 --- */
+
+/* 1. grid-sizer 只需要定义宽度，不需要其他样式 */
+.grid-sizer {
+    width: 10%;
 }
 
-/* --- 核心修改点 --- */
-.grid-sizer,
+/* 2. 外层容器 .grid-item 只负责宽度和提供 padding 来制造“间隙” */
+/* 它本身没有背景、边框或阴影 */
 .grid-item {
-    width: 10%; /* 保持列宽定义 */
-    float: left; /* 保持浮动 */
-    margin-bottom: 10px; /* 添加此行：控制项目之间的垂直间距 */
-    /* padding: 4px; */ /*  <-- 删除或注释掉此行！这是导致顶部对齐的元凶 */
+    width: 10%;
+    padding: 5px; /* 用 padding 创造出 10px 的总间距 */
+    /* 移除 float，Masonry 会处理定位 */
 }
 
-.grid-item img {
-    width: 100%;
-    height: auto;
-    display: block; /* 移除图片下方的空隙 */
+/* 3. 内层容器 .grid-item-content 才负责视觉样式 */
+.grid-item-content {
+    background-color: #fff;
     border-radius: 4px;
-    cursor: pointer;
-    background-color: #e0e0e0; /* 图片加载前的占位颜色 */
+    overflow: hidden; /* 确保图片圆角生效 */
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     transition: box-shadow 0.2s ease-in-out;
 }
-
-.grid-item img:hover {
+.grid-item-content:hover {
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
+/* 4. 图片充满内层容器 */
+.grid-item-content img {
+    width: 100%;
+    height: auto;
+    display: block;
+    cursor: pointer;
+}
 
-/* 响应式布局部分无需修改，它们会基于新的样式正常工作 */
+
+/* 响应式布局：现在只需要修改 .grid-sizer 和 .grid-item 的宽度即可 */
 @media (max-width: 2000px) { .grid-sizer, .grid-item { width: 12.5%; } }
 @media (max-width: 1600px) { .grid-sizer, .grid-item { width: 16.666%; } }
 @media (max-width: 1200px) { .grid-sizer, .grid-item { width: 20%; } }
