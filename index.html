@@ -12,7 +12,8 @@
     <h1>My Fast Image Gallery</h1>
     
     <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search by filename...">
+        <!-- 修改1：更新placeholder提示文本 -->
+        <input type="text" id="search-input" placeholder="Search by filename or tags...">
     </div>
 
     <div class="grid" id="grid">
@@ -78,7 +79,8 @@
                     item.className = 'grid-item';
                     
                     const img = document.createElement('img');
-                    img.src = imageInfo.thumbnail;
+                    // 假设图片都在 'images' 子文件夹中
+                    img.src = 'images/' + imageInfo.filename;
                     img.alt = imageInfo.filename;
                     img.loading = 'lazy'; 
                     
@@ -117,20 +119,22 @@
                 });
             }
             
+            // 修改2：更新搜索逻辑
             function filterImages() {
                 const searchTerm = searchInput.value.toLowerCase().trim();
                 
-                // 清空grid，保留grid-sizer
                 grid.innerHTML = '<div class="grid-sizer"></div>';
                 
-                // 过滤图片
-                displayedImages = allImages.filter(img => img.filename.toLowerCase().includes(searchTerm));
+                // 同时搜索文件名和tags
+                displayedImages = allImages.filter(img => {
+                    const filenameMatch = img.filename.toLowerCase().includes(searchTerm);
+                    // 确保img.tags存在且为字符串
+                    const tagsMatch = img.tags && img.tags.toLowerCase().includes(searchTerm);
+                    return filenameMatch || tagsMatch;
+                });
+                
                 currentIndex = 0;
-                
-                // 重新初始化Masonry
                 initMasonry();
-                
-                // 加载第一批
                 loadNextBatch();
             }
 
@@ -142,18 +146,19 @@
                 
                 initMasonry();
 
-                fetch('images.json')
+                // 修改3：读取新的JSON文件
+                fetch('image_data.json')
                     .then(response => response.json())
-                    .then(imageUrls => {
-                        allImages = imageUrls.map(url => ({
-                            thumbnail: url,
-                            full: url,
-                            filename: url.split('/').pop()
-                        }));
+                    .then(imageData => {
+                        // 修改4：处理新的数据结构
+                        allImages = imageData; // 直接使用，无需map转换
                         displayedImages = allImages;
                         loadNextBatch();
                     })
-                    .catch(console.error);
+                    .catch(error => {
+                        console.error('Error fetching image data:', error);
+                        alert('Failed to load image data. Please make sure image_data.json exists and is in the correct format.');
+                    });
             }
 
             initializeGallery();
