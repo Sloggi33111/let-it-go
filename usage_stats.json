@@ -53,5 +53,11 @@
     "daily_calls": {
       "2025-10-16": 3
     }
+  },
+  "yaogaoshuang": {
+    "total_calls": 1,
+    "daily_calls": {
+      "2025-10-16": 1
+    }
   }
 }
