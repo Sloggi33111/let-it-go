@@ -175,8 +175,8 @@
                 
                 initMasonry();
 
-                // 从 image_data.json 文件获取数据
-                fetch('image_data.json')
+                // 从 image.json 文件获取数据
+                fetch('image.json')
                     .then(response => response.json())
                     .then(imageData => {
                         allImages = imageData; // JSON数据已是所需格式
@@ -185,7 +185,7 @@
                     })
                     .catch(error => {
                         console.error('Error fetching image data:', error);
-                        alert('Failed to load image data. Please make sure image_data.json exists and is in the correct format.');
+                        alert('Failed to load image data. Please make sure image.json exists and is in the correct format.');
                     });
             }
 
