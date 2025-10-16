@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Fast Image Gallery</title>
     
-    <!-- CSS is now embedded directly into the HTML for a self-contained solution -->
     <style>
         * {
             box-sizing: border-box;
@@ -41,25 +40,22 @@
             max-width: 2400px; 
         }
 
-        /* --- This is the final, robust CSS for a true waterfall layout --- */
+        /* --- Final Corrected CSS --- */
 
-        /* 1. grid-sizer only defines the column width */
         .grid-sizer {
             width: 10%;
         }
-
-        /* 2. The outer .grid-item is a container for spacing (padding).
-           It has no visual styles like borders or shadows. */
+        
         .grid-item {
             width: 10%;
-            padding: 5px; /* Creates a 10px gutter (5px on each side) */
+            padding: 5px;
+            float: left; /* <-- 这是被错误移除的关键属性，现在已加回！ */
         }
 
-        /* 3. The inner .grid-item-content holds the actual visual content. */
         .grid-item-content {
             background-color: #fff;
             border-radius: 4px;
-            overflow: hidden; /* Ensures the image respects the border-radius */
+            overflow: hidden;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             transition: box-shadow 0.2s ease-in-out;
         }
@@ -67,16 +63,14 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
-        /* 4. The image fills its content container */
         .grid-item-content img {
             width: 100%;
             height: auto;
-            display: block; /* Removes bottom space under the image */
+            display: block;
             cursor: pointer;
         }
 
-
-        /* Responsive design: We only need to adjust the width of the sizer and item */
+        /* Responsive design */
         @media (max-width: 2000px) { .grid-sizer, .grid-item { width: 12.5%; } }
         @media (max-width: 1600px) { .grid-sizer, .grid-item { width: 16.666%; } }
         @media (max-width: 1200px) { .grid-sizer, .grid-item { width: 20%; } }
@@ -128,7 +122,6 @@
                 if (msnry) {
                     msnry.destroy();
                 }
-                // Gutter is now controlled by CSS padding, so we remove it from the JS options.
                 msnry = new Masonry(grid, {
                     itemSelector: '.grid-item',
                     columnWidth: '.grid-sizer',
@@ -154,12 +147,11 @@
                 const newItems = [];
 
                 batch.forEach(imageInfo => {
-                    // Create the robust HTML structure: .grid-item > .grid-item-content > img
                     const item = document.createElement('div');
-                    item.className = 'grid-item'; // Outer container for spacing
+                    item.className = 'grid-item';
                     
                     const itemContent = document.createElement('div');
-                    itemContent.className = 'grid-item-content'; // Inner container for visuals
+                    itemContent.className = 'grid-item-content';
                     
                     const img = document.createElement('img');
                     img.src = imageInfo.thumbnail;
@@ -192,7 +184,6 @@
 
                 grid.appendChild(fragment);
 
-                // Use imagesLoaded on the whole grid for better reliability
                 imagesLoaded(grid, function() {
                     if (msnry) {
                         msnry.appended(newItems);
@@ -206,7 +197,6 @@
             
             function filterImages() {
                 const searchTerm = searchInput.value.toLowerCase().trim();
-                
                 grid.innerHTML = '<div class="grid-sizer"></div>';
                 
                 displayedImages = allImages.filter(img => {
@@ -217,9 +207,7 @@
                 });
                 
                 currentIndex = 0;
-                
                 initMasonry();
-                
                 loadNextBatch();
             }
 
@@ -228,7 +216,6 @@
                     setTimeout(initializeGallery, 50);
                     return;
                 }
-                
                 initMasonry();
 
                 fetch('images.json')
@@ -243,7 +230,10 @@
                         displayedImages = allImages;
                         loadNextBatch();
                     })
-                    .catch(console.error);
+                    .catch(error => {
+                        console.error('Error fetching or parsing images.json:', error);
+                        alert('Could not load image data. Please check the console for errors.');
+                    });
             }
 
             initializeGallery();
