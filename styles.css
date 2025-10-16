@@ -39,21 +39,22 @@ h1 {
   clear: both;
 }
 
-
+/* --- 核心修改点 --- */
 .grid-sizer,
 .grid-item {
-    width: 10%;
-    padding: 4px;
-    float: left; /*  <-- 关键的修复！添加这一行 */
+    width: 10%; /* 保持列宽定义 */
+    float: left; /* 保持浮动 */
+    margin-bottom: 10px; /* 添加此行：控制项目之间的垂直间距 */
+    /* padding: 4px; */ /*  <-- 删除或注释掉此行！这是导致顶部对齐的元凶 */
 }
 
 .grid-item img {
     width: 100%;
     height: auto;
-    display: block;
+    display: block; /* 移除图片下方的空隙 */
     border-radius: 4px;
     cursor: pointer;
-    background-color: #e0e0e0;
+    background-color: #e0e0e0; /* 图片加载前的占位颜色 */
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     transition: box-shadow 0.2s ease-in-out;
 }
@@ -63,7 +64,7 @@ h1 {
 }
 
 
-/* 响应式布局部分保持不变，它们会继续正常工作 */
+/* 响应式布局部分无需修改，它们会基于新的样式正常工作 */
 @media (max-width: 2000px) { .grid-sizer, .grid-item { width: 12.5%; } }
 @media (max-width: 1600px) { .grid-sizer, .grid-item { width: 16.666%; } }
 @media (max-width: 1200px) { .grid-sizer, .grid-item { width: 20%; } }
