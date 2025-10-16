@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Fast Image Gallery</title>
+    <!-- 链接到你的多列布局样式文件 -->
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" async></script>
     <script src="https://cdn.jsdelivr.net/npm/imagesloaded@5/imagesloaded.pkgd.min.js" async></script>
@@ -12,11 +13,11 @@
     <h1>My Fast Image Gallery</h1>
     
     <div class="search-container">
-        <!-- 更新 placeholder 提示文本 -->
         <input type="text" id="search-input" placeholder="Search by filename or tags (e.g., eva, mecha)">
     </div>
 
     <div class="grid" id="grid">
+        <!-- Masonry会使用这个元素的宽度来计算列宽 -->
         <div class="grid-sizer"></div>
     </div>
 
@@ -34,7 +35,7 @@
             let allImages = []; 
             let displayedImages = []; 
             let currentIndex = 0; 
-            const batchSize = 50; // 可以适当增加每批加载的数量
+            const batchSize = 50; // 加载数量
             let isLoading = false; 
 
             function debounce(func, delay) {
@@ -50,12 +51,13 @@
                 if (msnry) {
                     msnry.destroy();
                 }
+                // *** 关键：这里的 gutter 值要和 CSS 中的间距设计相匹配 ***
                 msnry = new Masonry(grid, {
                     itemSelector: '.grid-item',
                     columnWidth: '.grid-sizer',
-                    gutter: 10,
+                    gutter: 10, // 水平间距为 10px
                     percentPosition: true,
-                    transitionDuration: 0 // 搜索时禁用动画，感觉更流畅
+                    transitionDuration: 0
                 });
             }
 
@@ -73,44 +75,29 @@
                 }
 
                 const fragment = document.createDocumentFragment();
-                const newItems = [];
-
+                
                 batch.forEach(imageInfo => {
                     const item = document.createElement('div');
                     item.className = 'grid-item';
                     
                     const img = document.createElement('img');
-                    // 修正图片路径：假设所有图片都在 'images' 子文件夹中
                     img.src = 'images/' + imageInfo.filename;
                     img.alt = imageInfo.filename;
                     img.loading = 'lazy'; 
                     
                     img.onclick = () => {
-                        const fullFilename = imageInfo.filename;
-                        const lastDotIndex = fullFilename.lastIndexOf('.');
-                        const filenameWithoutExt = (lastDotIndex > -1) 
-                            ? fullFilename.substring(0, lastDotIndex) 
-                            : fullFilename;
-
+                        const filenameWithoutExt = imageInfo.filename.substring(0, imageInfo.filename.lastIndexOf('.')) || imageInfo.filename;
                         navigator.clipboard.writeText(filenameWithoutExt)
-                            .then(() => {
-                                alert('Copied: ' + filenameWithoutExt);
-                            })
-                            .catch(err => {
-                                console.error('Failed to copy filename: ', err);
-                                alert('Sorry, could not copy the name.');
-                            });
+                            .then(() => alert('Copied: ' + filenameWithoutExt))
+                            .catch(err => console.error('Failed to copy filename: ', err));
                     };
                     
                     item.appendChild(img);
                     fragment.appendChild(item);
-                    newItems.push(item);
                 });
 
                 grid.appendChild(fragment);
 
-                // 关键：等待新添加的图片完全加载后，再执行 Masonry 布局
-                // 这是确保瀑布流正常的关键步骤
                 imagesLoaded(grid).on('always', function() {
                     if (msnry) {
                         msnry.layout();
@@ -122,36 +109,28 @@
                 loadingIndicator.style.display = 'none';
             }
             
-            // --- 全面升级的搜索函数 ---
+            // 强大的搜索函数
             function filterImages() {
                 const searchTerm = searchInput.value.toLowerCase().trim();
                 
-                // 1. 清空现有网格内容
+                // 清空并重建grid-sizer
                 grid.innerHTML = '<div class="grid-sizer"></div>';
 
-                // 2. 根据搜索词过滤图片数据
                 if (!searchTerm) {
                     displayedImages = allImages;
                 } else {
-                    const keywords = searchTerm.split(/[\s,]+/).filter(k => k);
-
+                    const keywords = searchTerm.split(/[\s,]+/).filter(Boolean);
                     displayedImages = allImages.filter(img => {
                         const filename = img.filename.toLowerCase();
                         const imageTags = img.tags ? img.tags.toLowerCase().split(',').map(tag => tag.trim()) : [];
-                        
                         return keywords.some(keyword => 
                             filename.includes(keyword) || imageTags.some(tag => tag.includes(keyword))
                         );
                     });
                 }
                 
-                // 3. 重置加载索引
                 currentIndex = 0;
-                
-                // 4. 重新初始化 Masonry (这是修复搜索后布局问题的关键)
-                initMasonry();
-                
-                // 5. 加载过滤后的第一批结果
+                initMasonry(); // 重新初始化布局
                 loadNextBatch();
             }
 
@@ -162,19 +141,15 @@
                     return;
                 }
                 
-                // 先初始化一次Masonry
                 initMasonry();
 
-                // 从 'image.json' 获取数据
+                // *** 读取 image.json 文件 ***
                 fetch('image.json')
                     .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                         return response.json();
                     })
                     .then(imageData => {
-                        // 直接使用新的数据结构
                         allImages = imageData;
                         displayedImages = allImages;
                         loadNextBatch();
