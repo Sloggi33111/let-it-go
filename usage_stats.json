@@ -1,9 +1,9 @@
 {
   "zhengtiancheng": {
-    "total_calls": 172,
+    "total_calls": 173,
     "daily_calls": {
       "2025-10-15": 126,
-      "2025-10-16": 46
+      "2025-10-16": 47
     }
   },
   "guyiran": {
@@ -52,9 +52,9 @@
     }
   },
   "zhangxinzhe": {
-    "total_calls": 8,
+    "total_calls": 7,
     "daily_calls": {
-      "2025-10-16": 8
+      "2025-10-16": 7
     }
   },
   "yaogaoshuang": {
