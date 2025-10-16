@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Fast Image Gallery</title>
-    <!-- 假设你的样式文件名为 styles.css -->
-    <link rel="stylesheet" href="styles.css"> 
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" async></script>
     <script src="https://cdn.jsdelivr.net/npm/imagesloaded@5/imagesloaded.pkgd.min.js" async></script>
 </head>
@@ -13,7 +12,8 @@
     <h1>My Fast Image Gallery</h1>
     
     <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search by filename or tags...">
+        <!-- 更新 placeholder 提示文本 -->
+        <input type="text" id="search-input" placeholder="Search by filename or tags (e.g., eva, mecha)">
     </div>
 
     <div class="grid" id="grid">
@@ -34,10 +34,9 @@
             let allImages = []; 
             let displayedImages = []; 
             let currentIndex = 0; 
-            const batchSize = 20; 
+            const batchSize = 50; // 可以适当增加每批加载的数量
             let isLoading = false; 
 
-            // 防抖函数，用于优化搜索输入事件，避免频繁触发
             function debounce(func, delay) {
                 let timeout;
                 return function(...args) {
@@ -56,11 +55,10 @@
                     columnWidth: '.grid-sizer',
                     gutter: 10,
                     percentPosition: true,
-                    transitionDuration: 0
+                    transitionDuration: 0 // 搜索时禁用动画，感觉更流畅
                 });
             }
 
-            // 加载下一批图片
             function loadNextBatch() {
                 if (isLoading) return;
                 isLoading = true;
@@ -82,12 +80,11 @@
                     item.className = 'grid-item';
                     
                     const img = document.createElement('img');
-                    // 假设所有图片都存储在 'images' 子文件夹中
+                    // 修正图片路径：假设所有图片都在 'images' 子文件夹中
                     img.src = 'images/' + imageInfo.filename;
                     img.alt = imageInfo.filename;
                     img.loading = 'lazy'; 
                     
-                    // 点击图片复制不带后缀的文件名
                     img.onclick = () => {
                         const fullFilename = imageInfo.filename;
                         const lastDotIndex = fullFilename.lastIndexOf('.');
@@ -112,76 +109,75 @@
 
                 grid.appendChild(fragment);
 
-                // 等待新添加的图片加载完成后再进行布局
-                imagesLoaded(newItems, function() {
+                // 关键：等待新添加的图片完全加载后，再执行 Masonry 布局
+                // 这是确保瀑布流正常的关键步骤
+                imagesLoaded(grid).on('always', function() {
                     if (msnry) {
-                        msnry.appended(newItems);
                         msnry.layout();
                     }
-                    currentIndex += batch.length;
-                    isLoading = false;
-                    loadingIndicator.style.display = 'none';
                 });
+
+                currentIndex += batch.length;
+                isLoading = false;
+                loadingIndicator.style.display = 'none';
             }
             
-            // --- 这是修改后的智能搜索函数 ---
+            // --- 全面升级的搜索函数 ---
             function filterImages() {
                 const searchTerm = searchInput.value.toLowerCase().trim();
                 
-                // 清空现有网格
+                // 1. 清空现有网格内容
                 grid.innerHTML = '<div class="grid-sizer"></div>';
 
+                // 2. 根据搜索词过滤图片数据
                 if (!searchTerm) {
-                    // 如果搜索框为空，直接显示所有图片
                     displayedImages = allImages;
                 } else {
-                    // 1. 将用户的搜索输入按空格或逗号分割成多个关键词
-                    const keywords = searchTerm.split(/[\s,]+/).filter(k => k); // filter(k=>k) 移除空字符串
+                    const keywords = searchTerm.split(/[\s,]+/).filter(k => k);
 
                     displayedImages = allImages.filter(img => {
                         const filename = img.filename.toLowerCase();
-                        
-                        // 2. 将图片的tags字符串也分割成一个数组，并清理每个tag的前后空格
                         const imageTags = img.tags ? img.tags.toLowerCase().split(',').map(tag => tag.trim()) : [];
                         
-                        // 3. 检查：是否“任何一个”关键词都能被匹配到 (OR 逻辑)
-                        return keywords.some(keyword => {
-                            // a. 检查文件名是否包含这个关键词
-                            if (filename.includes(keyword)) {
-                                return true;
-                            }
-                            // b. 检查是否“任何一个”图片Tag包含这个关键词
-                            if (imageTags.some(tag => tag.includes(keyword))) {
-                                return true;
-                            }
-                            return false;
-                        });
+                        return keywords.some(keyword => 
+                            filename.includes(keyword) || imageTags.some(tag => tag.includes(keyword))
+                        );
                     });
                 }
                 
-                // 重置索引并重新加载布局
+                // 3. 重置加载索引
                 currentIndex = 0;
+                
+                // 4. 重新初始化 Masonry (这是修复搜索后布局问题的关键)
                 initMasonry();
+                
+                // 5. 加载过滤后的第一批结果
                 loadNextBatch();
             }
 
-            // 初始化整个图库
+            // 初始化图库
             function initializeGallery() {
-                // 等待 Masonry 和 imagesLoaded 库加载完成
                 if (!window.Masonry || !window.imagesLoaded) {
                     setTimeout(initializeGallery, 50);
                     return;
                 }
                 
+                // 先初始化一次Masonry
                 initMasonry();
 
-                // 从 image.json 文件获取数据
+                // 从 'image.json' 获取数据
                 fetch('image.json')
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(imageData => {
-                        allImages = imageData; // JSON数据已是所需格式
+                        // 直接使用新的数据结构
+                        allImages = imageData;
                         displayedImages = allImages;
-                        loadNextBatch(); // 加载第一批图片
+                        loadNextBatch();
                     })
                     .catch(error => {
                         console.error('Error fetching image data:', error);
@@ -189,12 +185,9 @@
                     });
             }
 
-            // --- 事件监听 ---
-            // 页面加载完成后初始化
+            // --- 绑定事件 ---
             initializeGallery();
-            // 监听搜索框的输入事件，并使用防抖函数
             searchInput.addEventListener('input', debounce(filterImages, 300));
-            // 监听滚动事件，实现无限滚动加载
             window.addEventListener('scroll', () => {
                 if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && !isLoading && currentIndex < displayedImages.length) {
                     loadNextBatch();
