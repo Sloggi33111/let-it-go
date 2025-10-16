@@ -1,9 +1,12 @@
-/* --- 通用样式 --- */
+* {
+    box-sizing: border-box;
+}
+
 body {
-    font-family: sans-serif;
-    background-color: #f0f0f0;
     margin: 0;
     padding: 20px;
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
 }
 
 h1 {
@@ -12,81 +15,58 @@ h1 {
 }
 
 .search-container {
-    text-align: center;
-    margin-bottom: 20px;
+    max-width: 600px;
+    margin: 0 auto 30px;
 }
 
 #search-input {
-    width: 50%;
-    max-width: 400px;
-    padding: 10px;
+    width: 100%;
+    padding: 12px 15px;
     font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
 }
 
-/* --- Masonry 关键样式 --- */
+.grid {
+    margin: 0 auto;
+    max-width: 2400px; 
+}
 
-/* 清除浮动，因为 Masonry 的项目是浮动的 */
+/* 清除浮动，这是与 float: left 配套使用的最佳实践 */
 .grid:after {
-    content: '';
-    display: block;
-    clear: both;
+  content: '';
+  display: block;
+  clear: both;
 }
 
-/* 
-  这是最关键的部分！
-  .grid-sizer 定义了列的宽度。
-  .grid-item 定义了每个项目的宽度。
-  它们通常应该具有相同的宽度。
-  这里的 23% 意味着大约 4 列布局 (23% * 4 + 1% gutter * 3 = 95%)。
-  您可以根据需要调整为 30% (3列), 18% (5列) 等。
-*/
+
 .grid-sizer,
 .grid-item {
-    width: 23%;
-    margin-bottom: 10px; /* 项目之间的垂直间距 */
+    width: 10%;
+    padding: 4px;
+    float: left; /*  <-- 关键的修复！添加这一行 */
 }
 
-.grid-item {
-    float: left; /* Masonry 布局需要项目是浮动的 */
-    border-radius: 5px;
-    overflow: hidden; /* 隐藏图片超出圆角的部分 */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-/* 让图片自适应其容器的宽度 */
 .grid-item img {
-    display: block; /* 移除图片下方的微小空隙 */
     width: 100%;
     height: auto;
-    cursor: pointer; /* 提示用户图片可以点击 */
-    transition: transform 0.2s ease-in-out;
+    display: block;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #e0e0e0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: box-shadow 0.2s ease-in-out;
 }
 
-/* 添加一个简单的悬停效果 */
 .grid-item img:hover {
-    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-/* --- 响应式设计：在较小的屏幕上调整列数 --- */
-@media screen and (max-width: 1200px) {
-    .grid-sizer,
-    .grid-item {
-        width: 30%; /* 3 列 */
-    }
-}
 
-@media screen and (max-width: 768px) {
-    .grid-sizer,
-    .grid-item {
-        width: 48%; /* 2 列 */
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .grid-sizer,
-    .grid-item {
-        width: 100%; /* 1 列 */
-    }
-}
+/* 响应式布局部分保持不变，它们会继续正常工作 */
+@media (max-width: 2000px) { .grid-sizer, .grid-item { width: 12.5%; } }
+@media (max-width: 1600px) { .grid-sizer, .grid-item { width: 16.666%; } }
+@media (max-width: 1200px) { .grid-sizer, .grid-item { width: 20%; } }
+@media (max-width: 992px) { .grid-sizer, .grid-item { width: 25%; } }
+@media (max-width: 768px) { .grid-sizer, .grid-item { width: 33.333%; } }
+@media (max-width: 576px) { .grid-sizer, .grid-item { width: 50%; } }
