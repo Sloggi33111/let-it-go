@@ -4,81 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Fast Image Gallery</title>
-    
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-
-        .search-container {
-            max-width: 600px;
-            margin: 0 auto 30px;
-        }
-
-        #search-input {
-            width: 100%;
-            padding: 12px 15px;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-        }
-
-        .grid {
-            margin: 0 auto;
-            max-width: 2400px; 
-        }
-
-        /* --- Final Corrected CSS --- */
-
-        .grid-sizer {
-            width: 10%;
-        }
-        
-        .grid-item {
-            width: 10%;
-            padding: 5px;
-            float: left; /* <-- 这是被错误移除的关键属性，现在已加回！ */
-        }
-
-        .grid-item-content {
-            background-color: #fff;
-            border-radius: 4px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: box-shadow 0.2s ease-in-out;
-        }
-        .grid-item-content:hover {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-
-        .grid-item-content img {
-            width: 100%;
-            height: auto;
-            display: block;
-            cursor: pointer;
-        }
-
-        /* Responsive design */
-        @media (max-width: 2000px) { .grid-sizer, .grid-item { width: 12.5%; } }
-        @media (max-width: 1600px) { .grid-sizer, .grid-item { width: 16.666%; } }
-        @media (max-width: 1200px) { .grid-sizer, .grid-item { width: 20%; } }
-        @media (max-width: 992px) { .grid-sizer, .grid-item { width: 25%; } }
-        @media (max-width: 768px) { .grid-sizer, .grid-item { width: 33.333%; } }
-        @media (max-width: 576px) { .grid-sizer, .grid-item { width: 50%; } }
-    </style>
-    
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" async></script>
     <script src="https://cdn.jsdelivr.net/npm/imagesloaded@5/imagesloaded.pkgd.min.js" async></script>
 </head>
@@ -86,7 +12,8 @@
     <h1>My Fast Image Gallery</h1>
     
     <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search by filename, tags, or sku...">
+        <!-- Updated placeholder to reflect new functionality -->
+        <input type="text" id="search-input" placeholder="Search by filename or tags...">
     </div>
 
     <div class="grid" id="grid">
@@ -125,6 +52,7 @@
                 msnry = new Masonry(grid, {
                     itemSelector: '.grid-item',
                     columnWidth: '.grid-sizer',
+                    gutter: 10,
                     percentPosition: true,
                     transitionDuration: 0
                 });
@@ -150,9 +78,6 @@
                     const item = document.createElement('div');
                     item.className = 'grid-item';
                     
-                    const itemContent = document.createElement('div');
-                    itemContent.className = 'grid-item-content';
-                    
                     const img = document.createElement('img');
                     img.src = imageInfo.thumbnail;
                     img.alt = imageInfo.filename;
@@ -175,16 +100,14 @@
                             });
                     };
                     
-                    itemContent.appendChild(img);
-                    item.appendChild(itemContent);
-                    
+                    item.appendChild(img);
                     fragment.appendChild(item);
                     newItems.push(item);
                 });
 
                 grid.appendChild(fragment);
 
-                imagesLoaded(grid, function() {
+                imagesLoaded(newItems, function() {
                     if (msnry) {
                         msnry.appended(newItems);
                         msnry.layout();
@@ -195,45 +118,48 @@
                 });
             }
             
+            // --- CHANGE 1: SEARCH LOGIC MODIFIED ---
             function filterImages() {
                 const searchTerm = searchInput.value.toLowerCase().trim();
+                
                 grid.innerHTML = '<div class="grid-sizer"></div>';
                 
+                // Filter by checking both filename and tags
                 displayedImages = allImages.filter(img => {
                     const filenameMatch = img.filename.toLowerCase().includes(searchTerm);
-                    const skuMatch = img.sku.toLowerCase().includes(searchTerm);
                     const tagsMatch = img.tags.toLowerCase().includes(searchTerm);
-                    return filenameMatch || skuMatch || tagsMatch;
+                    return filenameMatch || tagsMatch;
                 });
-                
+
                 currentIndex = 0;
+                
                 initMasonry();
+                
                 loadNextBatch();
             }
 
+            // --- CHANGE 2: DATA LOADING LOGIC MODIFIED ---
             function initializeGallery() {
                 if (!window.Masonry || !window.imagesLoaded) {
                     setTimeout(initializeGallery, 50);
                     return;
                 }
+                
                 initMasonry();
 
                 fetch('images.json')
                     .then(response => response.json())
+                    // Updated to handle the array of objects from your images.json
                     .then(imageData => {
                         allImages = imageData.map(item => ({
-                            thumbnail: item.filename,
+                            thumbnail: item.filename, // Use filename as the image source
                             filename: item.filename,
-                            sku: item.sku || '',
-                            tags: item.tags || ''
+                            tags: item.tags || '' // Ensure tags property exists, default to empty string
                         }));
                         displayedImages = allImages;
                         loadNextBatch();
                     })
-                    .catch(error => {
-                        console.error('Error fetching or parsing images.json:', error);
-                        alert('Could not load image data. Please check the console for errors.');
-                    });
+                    .catch(console.error);
             }
 
             initializeGallery();
