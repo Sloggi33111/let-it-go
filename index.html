@@ -12,8 +12,8 @@
     <h1>My Fast Image Gallery</h1>
     
     <div class="search-container">
-        <!-- Updated placeholder to reflect new functionality -->
-        <input type="text" id="search-input" placeholder="Search by filename or tags...">
+        <!-- Kept original placeholder as requested, but logic is updated -->
+        <input type="text" id="search-input" placeholder="Search by filename...">
     </div>
 
     <div class="grid" id="grid">
@@ -79,7 +79,7 @@
                     item.className = 'grid-item';
                     
                     const img = document.createElement('img');
-                    img.src = imageInfo.thumbnail;
+                    img.src = imageInfo.thumbnail; // This path is now correct
                     img.alt = imageInfo.filename;
                     img.loading = 'lazy'; 
                     
@@ -118,27 +118,23 @@
                 });
             }
             
-            // --- CHANGE 1: SEARCH LOGIC MODIFIED ---
+            // This is the updated search logic as you requested
             function filterImages() {
                 const searchTerm = searchInput.value.toLowerCase().trim();
                 
                 grid.innerHTML = '<div class="grid-sizer"></div>';
                 
-                // Filter by checking both filename and tags
                 displayedImages = allImages.filter(img => {
                     const filenameMatch = img.filename.toLowerCase().includes(searchTerm);
                     const tagsMatch = img.tags.toLowerCase().includes(searchTerm);
                     return filenameMatch || tagsMatch;
                 });
-
+                
                 currentIndex = 0;
-                
                 initMasonry();
-                
                 loadNextBatch();
             }
 
-            // --- CHANGE 2: DATA LOADING LOGIC MODIFIED ---
             function initializeGallery() {
                 if (!window.Masonry || !window.imagesLoaded) {
                     setTimeout(initializeGallery, 50);
@@ -147,19 +143,28 @@
                 
                 initMasonry();
 
-                fetch('images.json')
-                    .then(response => response.json())
-                    // Updated to handle the array of objects from your images.json
+                // --- FIX #1: Correct path to images.json ---
+                fetch('Displate/images.json')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok: ' + response.statusText);
+                        }
+                        return response.json();
+                    })
                     .then(imageData => {
                         allImages = imageData.map(item => ({
-                            thumbnail: item.filename, // Use filename as the image source
+                            // --- FIX #2: Prepend the folder path to the image source ---
+                            thumbnail: 'Displate/' + item.filename, 
                             filename: item.filename,
-                            tags: item.tags || '' // Ensure tags property exists, default to empty string
+                            tags: item.tags || ''
                         }));
                         displayedImages = allImages;
                         loadNextBatch();
                     })
-                    .catch(console.error);
+                    .catch(error => {
+                        console.error('Error fetching or parsing images.json:', error);
+                        alert('Could not load image data. Please check the console for errors.');
+                    });
             }
 
             initializeGallery();
