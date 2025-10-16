@@ -1,16 +1,16 @@
 {
   "zhengtiancheng": {
-    "total_calls": 188,
+    "total_calls": 189,
     "daily_calls": {
       "2025-10-15": 126,
-      "2025-10-16": 62
+      "2025-10-16": 63
     }
   },
   "guyiran": {
-    "total_calls": 19,
+    "total_calls": 18,
     "daily_calls": {
       "2025-10-15": 8,
-      "2025-10-16": 11
+      "2025-10-16": 10
     }
   },
   "yangqiuying": {
