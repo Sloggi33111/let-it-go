@@ -1,38 +1,8 @@
 {
-  "zhengtiancheng": {
-    "total_calls": 20,
-    "daily_calls": {
-      "2025-10-16": 20
-    }
-  },
   "yangqiuying": {
-    "total_calls": 10,
+    "total_calls": 1,
     "daily_calls": {
-      "2025-10-16": 10
-    }
-  },
-  "guyiran": {
-    "total_calls": 26,
-    "daily_calls": {
-      "2025-10-16": 26
-    }
-  },
-  "zhangxinzhe": {
-    "total_calls": 26,
-    "daily_calls": {
-      "2025-10-16": 26
-    }
-  },
-  "admin": {
-    "total_calls": 5,
-    "daily_calls": {
-      "2025-10-16": 5
-    }
-  },
-  "yangweiwei": {
-    "total_calls": 7,
-    "daily_calls": {
-      "2025-10-16": 7
+      "2025-10-16": 1
     }
   }
 }
