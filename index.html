@@ -1,28 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Fast Image Gallery</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" async></script>
-    <script src="https://cdn.jsdelivr.net/npm/imagesloaded@5/imagesloaded.pkgd.min.js" async></script>
-</head>
-<body>
-    <h1>My Fast Image Gallery</h1>
-    
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search by filename, tags, or sku...">
-    </div>
-
-    <div class="grid" id="grid">
-        <div class="grid-sizer"></div>
-    </div>
-
-    <div id="loading-indicator" style="display: none; text-align: center; padding: 20px;">
-        <p>Loading more images...</p>
-    </div>
-    
+<!-- ... body 和 h1 等部分保持不变 ... -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const grid = document.getElementById('grid');
@@ -48,10 +24,11 @@
                 if (msnry) {
                     msnry.destroy();
                 }
+                // *** 修改点 1: 移除 gutter 选项 ***
+                // gutter 将由 CSS 的 padding 来控制
                 msnry = new Masonry(grid, {
                     itemSelector: '.grid-item',
                     columnWidth: '.grid-sizer',
-                    gutter: 10,
                     percentPosition: true,
                     transitionDuration: 0
                 });
@@ -74,11 +51,16 @@
                 const newItems = [];
 
                 batch.forEach(imageInfo => {
+                    // *** 修改点 2: 创造新的 HTML 结构 ***
+                    // .grid-item > .grid-item-content > img
+                    
                     const item = document.createElement('div');
-                    item.className = 'grid-item';
+                    item.className = 'grid-item'; // 这是外层容器，负责间距
+                    
+                    const itemContent = document.createElement('div');
+                    itemContent.className = 'grid-item-content'; // 这是内层容器，负责内容和样式
                     
                     const img = document.createElement('img');
-                    // Use the thumbnail property which now holds the filename/path
                     img.src = imageInfo.thumbnail;
                     img.alt = imageInfo.filename;
                     img.loading = 'lazy'; 
@@ -100,14 +82,16 @@
                             });
                     };
                     
-                    item.appendChild(img);
+                    itemContent.appendChild(img); // 把 img 放入内层容器
+                    item.appendChild(itemContent); // 把内层容器放入外层容器
+                    
                     fragment.appendChild(item);
                     newItems.push(item);
                 });
 
                 grid.appendChild(fragment);
 
-                imagesLoaded(newItems, function() {
+                imagesLoaded(grid, function() { // 监听 grid 容器，更可靠
                     if (msnry) {
                         msnry.appended(newItems);
                         msnry.layout();
@@ -121,10 +105,8 @@
             function filterImages() {
                 const searchTerm = searchInput.value.toLowerCase().trim();
                 
-                // 清空grid，保留grid-sizer
                 grid.innerHTML = '<div class="grid-sizer"></div>';
                 
-                // 过滤图片: Search in filename, sku, and tags
                 displayedImages = allImages.filter(img => {
                     const filenameMatch = img.filename.toLowerCase().includes(searchTerm);
                     const skuMatch = img.sku.toLowerCase().includes(searchTerm);
@@ -134,10 +116,8 @@
                 
                 currentIndex = 0;
                 
-                // 重新初始化Masonry
                 initMasonry();
                 
-                // 加载第一批
                 loadNextBatch();
             }
 
@@ -152,12 +132,11 @@
                 fetch('images.json')
                     .then(response => response.json())
                     .then(imageData => {
-                        // Process the new JSON structure
                         allImages = imageData.map(item => ({
-                            thumbnail: item.filename, // The path to the image
-                            filename: item.filename,  // Keep the filename for alt text and copy
-                            sku: item.sku || '',      // Ensure sku is always a string
-                            tags: item.tags || ''     // Ensure tags is always a string
+                            thumbnail: item.filename,
+                            filename: item.filename,
+                            sku: item.sku || '',
+                            tags: item.tags || ''
                         }));
                         displayedImages = allImages;
                         loadNextBatch();
@@ -174,5 +153,3 @@
             });
         });
     </script>
-</body>
-</html>
