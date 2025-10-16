@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Fast Image Gallery</title>
-    <!-- 链接到你的多列布局样式文件 -->
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" async></script>
     <script src="https://cdn.jsdelivr.net/npm/imagesloaded@5/imagesloaded.pkgd.min.js" async></script>
@@ -13,11 +12,10 @@
     <h1>My Fast Image Gallery</h1>
     
     <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search by filename or tags (e.g., eva, mecha)">
+        <input type="text" id="search-input" placeholder="Search by filename, tags, or sku...">
     </div>
 
     <div class="grid" id="grid">
-        <!-- Masonry会使用这个元素的宽度来计算列宽 -->
         <div class="grid-sizer"></div>
     </div>
 
@@ -35,7 +33,7 @@
             let allImages = []; 
             let displayedImages = []; 
             let currentIndex = 0; 
-            const batchSize = 50; // 加载数量
+            const batchSize = 20; 
             let isLoading = false; 
 
             function debounce(func, delay) {
@@ -46,16 +44,14 @@
                 };
             }
 
-            // 初始化或重新初始化 Masonry 布局
             function initMasonry() {
                 if (msnry) {
                     msnry.destroy();
                 }
-                // *** 关键：这里的 gutter 值要和 CSS 中的间距设计相匹配 ***
                 msnry = new Masonry(grid, {
                     itemSelector: '.grid-item',
                     columnWidth: '.grid-sizer',
-                    gutter: 10, // 水平间距为 10px
+                    gutter: 10,
                     percentPosition: true,
                     transitionDuration: 0
                 });
@@ -75,66 +71,76 @@
                 }
 
                 const fragment = document.createDocumentFragment();
-                
+                const newItems = [];
+
                 batch.forEach(imageInfo => {
                     const item = document.createElement('div');
                     item.className = 'grid-item';
                     
                     const img = document.createElement('img');
-                    img.src = 'images/' + imageInfo.filename;
+                    // Use the thumbnail property which now holds the filename/path
+                    img.src = imageInfo.thumbnail;
                     img.alt = imageInfo.filename;
                     img.loading = 'lazy'; 
                     
                     img.onclick = () => {
-                        const filenameWithoutExt = imageInfo.filename.substring(0, imageInfo.filename.lastIndexOf('.')) || imageInfo.filename;
+                        const fullFilename = imageInfo.filename;
+                        const lastDotIndex = fullFilename.lastIndexOf('.');
+                        const filenameWithoutExt = (lastDotIndex > -1) 
+                            ? fullFilename.substring(0, lastDotIndex) 
+                            : fullFilename;
+
                         navigator.clipboard.writeText(filenameWithoutExt)
-                            .then(() => alert('Copied: ' + filenameWithoutExt))
-                            .catch(err => console.error('Failed to copy filename: ', err));
+                            .then(() => {
+                                alert('Copied: ' + filenameWithoutExt);
+                            })
+                            .catch(err => {
+                                console.error('Failed to copy filename: ', err);
+                                alert('Sorry, could not copy the name.');
+                            });
                     };
                     
                     item.appendChild(img);
                     fragment.appendChild(item);
+                    newItems.push(item);
                 });
 
                 grid.appendChild(fragment);
 
-                imagesLoaded(grid).on('always', function() {
+                imagesLoaded(newItems, function() {
                     if (msnry) {
+                        msnry.appended(newItems);
                         msnry.layout();
                     }
+                    currentIndex += batch.length;
+                    isLoading = false;
+                    loadingIndicator.style.display = 'none';
                 });
-
-                currentIndex += batch.length;
-                isLoading = false;
-                loadingIndicator.style.display = 'none';
             }
             
-            // 强大的搜索函数
             function filterImages() {
                 const searchTerm = searchInput.value.toLowerCase().trim();
                 
-                // 清空并重建grid-sizer
+                // 清空grid，保留grid-sizer
                 grid.innerHTML = '<div class="grid-sizer"></div>';
-
-                if (!searchTerm) {
-                    displayedImages = allImages;
-                } else {
-                    const keywords = searchTerm.split(/[\s,]+/).filter(Boolean);
-                    displayedImages = allImages.filter(img => {
-                        const filename = img.filename.toLowerCase();
-                        const imageTags = img.tags ? img.tags.toLowerCase().split(',').map(tag => tag.trim()) : [];
-                        return keywords.some(keyword => 
-                            filename.includes(keyword) || imageTags.some(tag => tag.includes(keyword))
-                        );
-                    });
-                }
+                
+                // 过滤图片: Search in filename, sku, and tags
+                displayedImages = allImages.filter(img => {
+                    const filenameMatch = img.filename.toLowerCase().includes(searchTerm);
+                    const skuMatch = img.sku.toLowerCase().includes(searchTerm);
+                    const tagsMatch = img.tags.toLowerCase().includes(searchTerm);
+                    return filenameMatch || skuMatch || tagsMatch;
+                });
                 
                 currentIndex = 0;
-                initMasonry(); // 重新初始化布局
+                
+                // 重新初始化Masonry
+                initMasonry();
+                
+                // 加载第一批
                 loadNextBatch();
             }
 
-            // 初始化图库
             function initializeGallery() {
                 if (!window.Masonry || !window.imagesLoaded) {
                     setTimeout(initializeGallery, 50);
@@ -143,24 +149,22 @@
                 
                 initMasonry();
 
-                // *** 读取 image.json 文件 ***
-                fetch('image.json')
-                    .then(response => {
-                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                        return response.json();
-                    })
+                fetch('images.json')
+                    .then(response => response.json())
                     .then(imageData => {
-                        allImages = imageData;
+                        // Process the new JSON structure
+                        allImages = imageData.map(item => ({
+                            thumbnail: item.filename, // The path to the image
+                            filename: item.filename,  // Keep the filename for alt text and copy
+                            sku: item.sku || '',      // Ensure sku is always a string
+                            tags: item.tags || ''     // Ensure tags is always a string
+                        }));
                         displayedImages = allImages;
                         loadNextBatch();
                     })
-                    .catch(error => {
-                        console.error('Error fetching image data:', error);
-                        alert('Failed to load image data. Please make sure image.json exists and is in the correct format.');
-                    });
+                    .catch(console.error);
             }
 
-            // --- 绑定事件 ---
             initializeGallery();
             searchInput.addEventListener('input', debounce(filterImages, 300));
             window.addEventListener('scroll', () => {
