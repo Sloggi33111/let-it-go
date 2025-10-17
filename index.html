@@ -12,7 +12,6 @@
     <h1>My Fast Image Gallery</h1>
     
     <div class="search-container">
-        <!-- Kept original placeholder as requested, but logic is updated -->
         <input type="text" id="search-input" placeholder="Search by filename...">
     </div>
 
@@ -79,7 +78,7 @@
                     item.className = 'grid-item';
                     
                     const img = document.createElement('img');
-                    img.src = imageInfo.thumbnail; // This path is now correct
+                    img.src = imageInfo.thumbnail;
                     img.alt = imageInfo.filename;
                     img.loading = 'lazy'; 
                     
@@ -118,20 +117,20 @@
                 });
             }
             
-            // This is the updated search logic as you requested
             function filterImages() {
                 const searchTerm = searchInput.value.toLowerCase().trim();
                 
+                // 清空grid，保留grid-sizer
                 grid.innerHTML = '<div class="grid-sizer"></div>';
                 
-                displayedImages = allImages.filter(img => {
-                    const filenameMatch = img.filename.toLowerCase().includes(searchTerm);
-                    const tagsMatch = img.tags.toLowerCase().includes(searchTerm);
-                    return filenameMatch || tagsMatch;
-                });
-                
+                // 过滤图片
+                displayedImages = allImages.filter(img => img.filename.toLowerCase().includes(searchTerm));
                 currentIndex = 0;
+                
+                // 重新初始化Masonry
                 initMasonry();
+                
+                // 加载第一批
                 loadNextBatch();
             }
 
@@ -143,28 +142,18 @@
                 
                 initMasonry();
 
-                // --- FIX #1: Correct path to images.json ---
-                fetch('Displate/images.json')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok: ' + response.statusText);
-                        }
-                        return response.json();
-                    })
-                    .then(imageData => {
-                        allImages = imageData.map(item => ({
-                            // --- FIX #2: Prepend the folder path to the image source ---
-                            thumbnail: 'Displate/' + item.filename, 
-                            filename: item.filename,
-                            tags: item.tags || ''
+                fetch('images.json')
+                    .then(response => response.json())
+                    .then(imageUrls => {
+                        allImages = imageUrls.map(url => ({
+                            thumbnail: url,
+                            full: url,
+                            filename: url.split('/').pop()
                         }));
                         displayedImages = allImages;
                         loadNextBatch();
                     })
-                    .catch(error => {
-                        console.error('Error fetching or parsing images.json:', error);
-                        alert('Could not load image data. Please check the console for errors.');
-                    });
+                    .catch(console.error);
             }
 
             initializeGallery();
