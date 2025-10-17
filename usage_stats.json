@@ -14,9 +14,10 @@
     }
   },
   "yangweiwei": {
-    "total_calls": 17,
+    "total_calls": 18,
     "daily_calls": {
-      "2025-10-16": 17
+      "2025-10-16": 17,
+      "2025-10-17": 1
     }
   },
   "admin": {
