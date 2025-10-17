@@ -20,9 +20,10 @@
     }
   },
   "admin": {
-    "total_calls": 45,
+    "total_calls": 46,
     "daily_calls": {
-      "2025-10-16": 45
+      "2025-10-16": 45,
+      "2025-10-17": 1
     }
   },
   "liuzhantong": {
