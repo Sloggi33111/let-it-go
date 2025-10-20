@@ -59,10 +59,11 @@
     }
   },
   "zhengtiancheng": {
-    "total_calls": 14,
+    "total_calls": 15,
     "daily_calls": {
       "2025-10-17": 1,
-      "2025-10-18": 13
+      "2025-10-18": 13,
+      "2025-10-20": 1
     }
   },
   "gaohuiyi": {
