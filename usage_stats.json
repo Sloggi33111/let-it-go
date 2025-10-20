@@ -43,9 +43,10 @@
     }
   },
   "weihongwei": {
-    "total_calls": 4,
+    "total_calls": 5,
     "daily_calls": {
-      "2025-10-17": 4
+      "2025-10-17": 4,
+      "2025-10-20": 1
     }
   },
   "guyiran": {
