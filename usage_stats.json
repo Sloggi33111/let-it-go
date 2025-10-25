@@ -67,5 +67,11 @@
     "daily_calls": {
       "2025-10-24": 2
     }
+  },
+  "yangweiwei": {
+    "total_calls": 1,
+    "daily_calls": {
+      "2025-10-24": 1
+    }
   }
 }
