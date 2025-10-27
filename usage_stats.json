@@ -24,11 +24,11 @@
     }
   },
   "zhengtiancheng": {
-    "total_calls": 100,
+    "total_calls": 101,
     "daily_calls": {
       "2025-10-23": 51,
       "2025-10-25": 41,
-      "2025-10-27": 8
+      "2025-10-27": 9
     }
   },
   "chenzeyu": {
