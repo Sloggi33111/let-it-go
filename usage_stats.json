@@ -1,9 +1,10 @@
 {
   "yaogaoshuang": {
-    "total_calls": 8,
+    "total_calls": 9,
     "daily_calls": {
       "2025-10-23": 3,
-      "2025-10-24": 5
+      "2025-10-24": 5,
+      "2025-11-04": 1
     }
   },
   "guyiran": {
