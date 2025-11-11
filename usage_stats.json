@@ -19,9 +19,10 @@
     }
   },
   "chenzeyu": {
-    "total_calls": 49,
+    "total_calls": 50,
     "daily_calls": {
-      "2025-11-10": 49
+      "2025-11-10": 49,
+      "2025-11-11": 1
     }
   },
   "xuruyi": {
