@@ -22,5 +22,11 @@
     "daily_calls": {
       "2025-11-11": 13
     }
+  },
+  "zhengtiancheng": {
+    "total_calls": 1,
+    "daily_calls": {
+      "2025-11-11": 1
+    }
   }
 }
