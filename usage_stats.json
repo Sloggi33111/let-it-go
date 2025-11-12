@@ -28,10 +28,10 @@
     }
   },
   "zhengtiancheng": {
-    "total_calls": 14,
+    "total_calls": 15,
     "daily_calls": {
       "2025-11-11": 12,
-      "2025-11-12": 2
+      "2025-11-12": 3
     }
   }
 }
