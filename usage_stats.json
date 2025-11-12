@@ -1,8 +1,9 @@
 {
   "yangqiuying": {
-    "total_calls": 23,
+    "total_calls": 24,
     "daily_calls": {
-      "2025-11-11": 23
+      "2025-11-11": 23,
+      "2025-11-12": 1
     }
   },
   "admin": {
