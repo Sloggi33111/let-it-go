@@ -7,10 +7,10 @@
     }
   },
   "admin": {
-    "total_calls": 21,
+    "total_calls": 22,
     "daily_calls": {
       "2025-11-11": 14,
-      "2025-11-12": 7
+      "2025-11-12": 8
     }
   },
   "chenzeyu": {
