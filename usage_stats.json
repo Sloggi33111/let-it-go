@@ -22,10 +22,11 @@
     }
   },
   "guyiran": {
-    "total_calls": 51,
+    "total_calls": 52,
     "daily_calls": {
       "2025-11-11": 13,
-      "2025-11-12": 38
+      "2025-11-12": 38,
+      "2025-11-13": 1
     }
   },
   "zhengtiancheng": {
