@@ -4,5 +4,11 @@
     "daily_calls": {
       "2025-11-17": 2
     }
+  },
+  "guyiran": {
+    "total_calls": 1,
+    "daily_calls": {
+      "2025-11-17": 1
+    }
   }
 }
