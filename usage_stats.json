@@ -1,9 +1,9 @@
 {
   "yangqiuying": {
-    "total_calls": 66,
+    "total_calls": 67,
     "daily_calls": {
       "2025-11-17": 43,
-      "2025-11-18": 23
+      "2025-11-18": 24
     }
   },
   "guyiran": {
@@ -26,9 +26,9 @@
     }
   },
   "chenzeyu": {
-    "total_calls": 6,
+    "total_calls": 5,
     "daily_calls": {
-      "2025-11-18": 6
+      "2025-11-18": 5
     }
   }
 }
