@@ -36,5 +36,11 @@
     "daily_calls": {
       "2025-11-20": 24
     }
+  },
+  "gaohuiyi": {
+    "total_calls": 1,
+    "daily_calls": {
+      "2025-11-20": 1
+    }
   }
 }
