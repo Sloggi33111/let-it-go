@@ -29,5 +29,11 @@
     "daily_calls": {
       "2025-11-19": 48
     }
+  },
+  "xuruyi": {
+    "total_calls": 1,
+    "daily_calls": {
+      "2025-11-20": 1
+    }
   }
 }
