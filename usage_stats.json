@@ -43,9 +43,10 @@
     }
   },
   "xuruyi": {
-    "total_calls": 24,
+    "total_calls": 25,
     "daily_calls": {
-      "2025-11-20": 24
+      "2025-11-20": 24,
+      "2026-01-09": 1
     }
   },
   "gaohuiyi": {
